@@ -18,7 +18,25 @@ class AudioLengthError(Exception):
 
 class FeatureExtractor:
     """
+    Provides a feature extraction interface for audio files.
+
+    Attributes
+    ----------
+    sample_rate : int
+        the sample rate at which to load/resample audio
+    audio_length : float
+        the length, in seconds, of audio to read
+    mono : bool
+        whether to load only a single channel from audio
+
+    Methods
+    -------
+    load_normalized(filename)
+        Gets the normalized time series and sample rate from the audio
+    extract(filename)
+        Performs feature extraction on the audio file
     """
+
     # Sampling rate in Hz
     SR_LOW = 22050
     SR_STANDARD = 44100
@@ -29,11 +47,21 @@ class FeatureExtractor:
     MONO = True
 
     def __init__(self,
-                 variant=None,
+                 variant,
                  sample_rate=SR_LOW,
                  audio_length=AU_LEN_STANDARD,
                  mono=MONO):
         """
+        Parameters
+        ----------
+        variant : str
+            The extraction variant (A, B, or C)
+        sample_rate : int, optional
+            Rhe sample rate at which to load/resample audio
+        audio_length : float, optional
+            The length, in seconds, of audio to read
+        mono : bool, optional
+            Whether to load only a single channel from audio
         """
         self.sample_rate = sample_rate
         self.audio_length = audio_length
@@ -49,7 +77,28 @@ class FeatureExtractor:
 
     def load_normalized(self, filename):
         """
+        Wraps librosa.load with normalization to ensure data consistency.
+
+        Ensures consistent sample rate and audio length.
+
+        Parameters
+        ----------
+        filename : str
+            The audio file to load
+
+        Raises
+        ------
+        AudioLengthError
+            If audio is shorter than self.audio_length
+
+        Returns
+        ------
+        numpy.array
+            array of floats representing the audio time series
+        int
+            sample rate of the audio after resampling
         """
+
         duration = librosa.get_duration(filename=filename)
         if (duration < self.audio_length):
             raise AudioLengthError(filename, duration, self.audio_length)
@@ -61,7 +110,21 @@ class FeatureExtractor:
 
     def _extract_C(self, filename):
         """
+        Feature extraction for ML algo C.
+
+        Extracts the log mel spectrogram as a numpy.array of float16.
+
+        Parameters
+        ----------
+        filename : str
+            The audio file to load
+
+        Returns
+        ------
+        numpy.array
+            array of float16 representing the log mel spectrogram
         """
+
         N_FFT = 2048
         HOP_LENGTH = 512
         N_MELS = 64
