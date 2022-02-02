@@ -7,7 +7,6 @@ class DataLoader:
     """
     """
 
-    # Sampling rate in Hz
     DATA_DIR = __file__ + '/../../resources'
     DATA_TYPE = 'gtzan'
     FMA_SET = 'small'
@@ -118,16 +117,3 @@ class DataLoader:
         """
         """
         return self.genre_inverse_dict[genre_id]
-
-
-if __name__ == '__main__':
-
-    # example = DataLoader()
-    example = DataLoader('gtzan')
-    x = example.gather_data('au')
-    print(x)
-    # print(x[0])
-    # for i, e in enumerate(x.items()):
-    #     print(e[0], e[1])
-    #     if i > 100:
-    #         break
