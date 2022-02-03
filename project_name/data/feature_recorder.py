@@ -4,8 +4,9 @@ import tensorflow as tf
 class FeatureRecorder:
     """
     """
+    FEATURE_DESC_DEF = [('features', tf.float16), ('labels', tf.int32)]
 
-    def __init__(self, feature_descriptor=None):
+    def __init__(self, feature_descriptor=FEATURE_DESC_DEF):
         """
         """
         self.feature_descriptor = feature_descriptor
