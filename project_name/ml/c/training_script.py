@@ -11,6 +11,8 @@ sys.path.append(mymodule_dir)
 import data.data_loader as dl           # noqa: E402
 import data.feature_recorder as fr      # noqa: E402
 
+LOAD_ALGO = True
+
 if __name__ == '__main__':
 
     start_time = time.time()
@@ -34,7 +36,15 @@ if __name__ == '__main__':
     training = ml_algo.create_dataset(file_paths)
     validation = ml_algo.create_dataset(file_paths)
     testing = ml_algo.create_dataset(file_paths)
-    ml_algo.compile_model()
-    ml_algo.model.fit(training, epochs=40, validation_data=validation)
 
+    # Get previously trained algo to train it some more!
+    if LOAD_ALGO:
+        ml_algo.load_model()
+
+    # Compile the model and fit the training data
+    ml_algo.compile_model()
+    ml_algo.model.fit(training, epochs=50, validation_data=validation)
+    # Evaluate performance on the test set
     ml_algo.model.evaluate(testing)
+    # Save our trained algo for future usage
+    ml_algo.save_model()
