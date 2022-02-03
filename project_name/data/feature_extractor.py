@@ -103,10 +103,15 @@ class FeatureExtractor:
         if (duration < self.audio_length):
             raise AudioLengthError(filename, duration, self.audio_length)
 
+        # Use padding to ensure the audio is taken from the middle of the clip
+        # when the audio clip is longer than the sought load length.
+        padding = (duration - self.audio_length) / 2
+
         return librosa.load(filename,
                             sr=self.sample_rate,
                             mono=self.mono,
-                            duration=self.audio_length)
+                            duration=self.audio_length,
+                            offset=padding)
 
     def _extract_C(self, filename):
         """
