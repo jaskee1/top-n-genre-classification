@@ -63,7 +63,7 @@ class DataLoader:
         """
         """
         file_paths = np.array(
-            list(self.gtzan_dir.rglob(f'*.{file_extension}')))
+            list(self.gtzan_dir.rglob(f'*.{file_extension}')))        
 
         if include_labels:
             genre_labels = [self.get_label(
@@ -71,6 +71,9 @@ class DataLoader:
             data = pd.DataFrame({'data': file_paths, 'label': genre_labels})
         else:
             data = pd.DataFrame({'data': file_paths})
+
+        # Change the Path objects to strings
+        data['data'] = data['data'].map(str)
 
         return data
 
@@ -105,6 +108,9 @@ class DataLoader:
             tracks['label'] = tracks['label'].map(self.get_label)
         else:
             tracks = tracks[['data']]
+
+        # Change the Path objects to strings
+        tracks['data'] = tracks['data'].map(str)
 
         return tracks
 

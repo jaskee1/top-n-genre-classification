@@ -1,3 +1,4 @@
+from pathlib import Path
 import tensorflow as tf
 
 
@@ -42,14 +43,16 @@ class FeatureRecorder:
     def write_tfrecord(self, protobuf, file_path):
         """
         """
-        filename = str(file_path.with_suffix('.tfrecord'))
+        # Use a Path object to make use of the .with_suffix method.
+        filename = str(Path(file_path).with_suffix('.tfrecord'))
         with tf.io.TFRecordWriter(filename) as f:
             f.write(protobuf.SerializeToString())
 
     def read_tfrecord(self, file_path):
         """
         """
-        filename = str(file_path.with_suffix('.tfrecord'))
+        # Use a Path object to make use of the .with_suffix method.
+        filename = str(Path(file_path).with_suffix('.tfrecord'))
         feature_des = tf.io.FixedLenFeature([], tf.string, default_value='')
         feature_description = {
                 x[0]: feature_des for x in self.feature_descriptor
