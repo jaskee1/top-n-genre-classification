@@ -59,18 +59,22 @@ class DataLoader:
 
         self.genre_inverse_dict = {v: k for k, v in self.genre_dict.items()}
 
-    def _gather_data_gtzan(self, file_extension):
+    def _gather_data_gtzan(self, file_extension, include_labels=True):
         """
         """
         file_paths = np.array(
             list(self.gtzan_dir.rglob(f'*.{file_extension}')))
 
-        genre_labels = [self.get_label(
-            self.genre_dict[x.parent.name]) for x in file_paths]
+        if include_labels:
+            genre_labels = [self.get_label(
+                self.genre_dict[x.parent.name]) for x in file_paths]
+            data = pd.DataFrame({'data': file_paths, 'label': genre_labels})
+        else:
+            data = pd.DataFrame({'data': file_paths})
 
-        return pd.DataFrame({'data': file_paths, 'label': genre_labels})
+        return data
 
-    def _gather_data_fma(self, file_extension):
+    def _gather_data_fma(self, file_extension, include_labels=True):
         """
         """
         # Load track data from csv and select only the requested subset
@@ -88,15 +92,19 @@ class DataLoader:
         # Select only the columns we care about
         tracks = tracks[['index', 'genre_top']]
 
-        # Map the genres to their associated labels, ready for ML
-        tracks['genre_top'] = tracks['genre_top'].map(self.genre_dict)
-        tracks['genre_top'] = tracks['genre_top'].map(self.get_label)
         # Map the track ids to their associated filenames
         tracks['index'] = tracks['index'].map(self._get_filename_fma)
         file_extender_str = '{{}}.{}'.format(file_extension)
         tracks['index'] = tracks['index'].map(file_extender_str.format)
-
+        # More appropriate column names
         tracks = tracks.rename({'index': 'data', 'genre_top': 'label'}, axis=1)
+
+        if include_labels:
+            # Map the genres to their associated labels, ready for ML
+            tracks['label'] = tracks['label'].map(self.genre_dict)
+            tracks['label'] = tracks['label'].map(self.get_label)
+        else:
+            tracks = tracks[['data']]
 
         return tracks
 
