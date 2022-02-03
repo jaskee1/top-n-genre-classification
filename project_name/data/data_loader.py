@@ -63,7 +63,7 @@ class DataLoader:
         """
         """
         file_paths = np.array(
-            list(self.gtzan_dir.rglob(f'*.{file_extension}')))        
+            list(self.gtzan_dir.rglob(f'*.{file_extension}')))
 
         if include_labels:
             genre_labels = [self.get_label(

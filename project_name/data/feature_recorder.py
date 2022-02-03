@@ -12,6 +12,11 @@ class FeatureRecorder:
         """
         self.feature_descriptor = feature_descriptor
 
+        feature_des = tf.io.FixedLenFeature([], tf.string, default_value='')
+        self.feature_description = {
+                x[0]: feature_des for x in self.feature_descriptor
+            }
+
     def _make_feature(self, value):
         """
         """
@@ -76,3 +81,17 @@ class FeatureRecorder:
             bundle = bundle[0]
 
         return bundle
+
+    @tf.function
+    def read_tfrecord_from_tfrecord_dataset(self, serialized_example):
+        """
+        """
+
+        tensor_dict = tf.io.parse_single_example(serialized_example,
+                                                 self.feature_description)
+
+        for i, k in enumerate(self.feature_description.keys()):
+            tensor_dict[k] = tf.io.parse_tensor(
+                tensor_dict[k], self.feature_descriptor[i][1])
+
+        return tensor_dict
