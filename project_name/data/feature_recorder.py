@@ -94,4 +94,6 @@ class FeatureRecorder:
             tensor_dict[k] = tf.io.parse_tensor(
                 tensor_dict[k], self.feature_descriptor[i][1])
 
+        tensor_dict = tensor_dict.values()
+
         return tensor_dict
