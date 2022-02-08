@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import sys
 import os
-sys.path.append(os.path.dirname(os.path.dirname(__file__)) + '\\ml\\b')
+sys.path.append(os.path.join('..', 'ml', 'b'))
+sys.path.append(os.path.join('..', 'data'))
 from gtzan_utils import gtzan_utils
 from MlAlgoB import MlAlgoB
 
