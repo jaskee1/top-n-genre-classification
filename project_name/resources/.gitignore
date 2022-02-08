@@ -1,2 +1,6 @@
 *
 !.gitignore
+!gtzan/
+!gtzan/genres/
+!gtzan/genres/**
+# !gtzan/*
