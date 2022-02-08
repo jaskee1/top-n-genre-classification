@@ -21,12 +21,12 @@ def get_test_and_validation_data():
     start = datetime.datetime.now()
 
     # TODO: sample the data with replacement
-    for folder in os.listdir('genres/'):
+    for folder in os.listdir('../../resources/gtzan/genres/'):
         counter = 0
 
-        for filename in os.listdir('resources/gtzan/genres/' + folder):
+        for filename in os.listdir('../../resources/gtzan/genres/' + folder):
             counter += 1
-            file_path = './resources/gtzan/genres/' + folder + '/' + filename
+            file_path = '../../resources/gtzan/genres/' + folder + '/' + filename
             y, sr = librosa.load(file_path, duration=25)
 
             mel = librosa.feature.melspectrogram(y=y, sr=sr, n_fft=2048, hop_length=1024)
