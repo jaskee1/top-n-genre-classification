@@ -24,9 +24,9 @@ def get_test_and_validation_data():
     for folder in os.listdir('genres/'):
         counter = 0
 
-        for filename in os.listdir('genres/' + folder):
+        for filename in os.listdir('resources/gtzan/genres/' + folder):
             counter += 1
-            file_path = './genres/' + folder + '/' + filename
+            file_path = './resources/gtzan/genres/' + folder + '/' + filename
             y, sr = librosa.load(file_path, duration=25)
 
             mel = librosa.feature.melspectrogram(y=y, sr=sr, n_fft=2048, hop_length=1024)
