@@ -11,7 +11,7 @@ sys.path.append(mymodule_dir)
 import data.data_loader as dl           # noqa: E402
 import data.feature_recorder as fr      # noqa: E402
 
-LOAD_ALGO = True
+LOAD_ALGO = False
 
 if __name__ == '__main__':
 
