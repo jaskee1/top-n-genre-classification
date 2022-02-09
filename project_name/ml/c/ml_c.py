@@ -1,14 +1,14 @@
-import sys
-import os
+# import sys
+# import os
 from pathlib import Path
 import tensorflow as tf
 from tensorflow import keras
 
-script_dir = os.path.dirname(__file__)
-mymodule_dir = os.path.join(script_dir, '..', '..')
-sys.path.append(mymodule_dir)
+# script_dir = os.path.dirname(__file__)
+# mymodule_dir = os.path.join(script_dir, '..', '..')
+# sys.path.append(mymodule_dir)
 
-import data.feature_recorder as fr      # noqa: E402
+import project_name.data.feature_recorder as fr
 
 
 class MlAlgoC:

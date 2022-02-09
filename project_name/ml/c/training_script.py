@@ -1,15 +1,15 @@
 import sys
-import os
+# import os
 import time
 
 from ml_c import MlAlgoC
 
-script_dir = os.path.dirname(__file__)
-mymodule_dir = os.path.join(script_dir, '..', '..')
-sys.path.append(mymodule_dir)
+# script_dir = os.path.dirname(__file__)
+# mymodule_dir = os.path.join(script_dir, '..', '..')
+# sys.path.append(mymodule_dir)
 
-import data.data_loader as dl           # noqa: E402
-import data.feature_recorder as fr      # noqa: E402
+import project_name.data.data_loader as dl           # noqa: E402
+import project_name.data.feature_recorder as fr      # noqa: E402
 
 LOAD_ALGO = False
 
