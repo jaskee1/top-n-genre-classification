@@ -5,8 +5,8 @@ import tensorflow as tf
 
 from project_name.ml.c.ml_algo_c import MlAlgoC
 
-import project_name.data.data_loader as dl           # noqa: E402
-import project_name.data.feature_recorder as fr      # noqa: E402
+import project_name.data.data_loader as dl
+import project_name.data.feature_recorder as fr
 
 LOAD_ALGO = False
 
@@ -29,9 +29,9 @@ if __name__ == '__main__':
     # Get the splits
     training, validation, testing = MlAlgoC.split_dataframe_gtzan(file_paths)
     # Create smart tensorflow dataset objects that can load the data on demand
-    training = MlAlgoC.create_dataset(file_paths)
-    validation = MlAlgoC.create_dataset(file_paths)
-    testing = MlAlgoC.create_dataset(file_paths)
+    training = MlAlgoC.create_dataset(training)
+    validation = MlAlgoC.create_dataset(validation)
+    testing = MlAlgoC.create_dataset(testing)
 
     # Get previously trained algo to train it some more!
     if LOAD_ALGO:
@@ -47,7 +47,7 @@ if __name__ == '__main__':
 
     # Compile the model and fit the training data
     ml_algo.compile_model()
-    ml_algo.model.fit(training, epochs=50, validation_data=validation)
+    ml_algo.model.fit(training, epochs=80, validation_data=validation)
     # Evaluate performance on the test set
     ml_algo.model.evaluate(testing)
     # Save our trained algo for future usage

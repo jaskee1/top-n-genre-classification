@@ -19,7 +19,7 @@ if __name__ == '__main__':
         fma_set = sys.argv[2]
 
     loader = dl.DataLoader(data_type=data_type)
-    extractor = fe.FeatureExtractor(variant="C", audio_length=15.0)
+    extractor = fe.FeatureExtractor(variant="C")
     recorder = fr.FeatureRecorder()
 
     raw_data = loader.gather_data('au')
