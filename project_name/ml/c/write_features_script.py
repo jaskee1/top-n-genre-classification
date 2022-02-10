@@ -19,7 +19,7 @@ if __name__ == '__main__':
         fma_set = sys.argv[2]
 
     loader = dl.DataLoader(data_type=data_type)
-    extractor = fe.FeatureExtractor(variant="C")
+    extractor = fe.FeatureExtractor(variant="C", audio_length=15.0)
     recorder = fr.FeatureRecorder()
 
     raw_data = loader.gather_data('au')
@@ -32,7 +32,7 @@ if __name__ == '__main__':
         # Pack features and label into a protobuf for writing to disk
         protobuf = recorder.packIntoProtobuf([features, label])
         # Write them to a binary .tfrecord file
-        recorder.write_tfrecord(protobuf, file_path)
+        recorder.write_tfrecord(protobuf, file_path, '.c.tfrecord')
 
         if DEBUG and index < 10:
             print(recorder.read_tfrecord(file_path))

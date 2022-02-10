@@ -45,11 +45,11 @@ class FeatureRecorder:
         return tf.train.Example(features=tf.train.Features(
             feature=packed_features))
 
-    def write_tfrecord(self, protobuf, file_path):
+    def write_tfrecord(self, protobuf, file_path, extension):
         """
         """
         # Use a Path object to make use of the .with_suffix method.
-        filename = str(Path(file_path).with_suffix('.tfrecord'))
+        filename = str(Path(file_path).with_suffix(extension))
         with tf.io.TFRecordWriter(filename) as f:
             f.write(protobuf.SerializeToString())
 
