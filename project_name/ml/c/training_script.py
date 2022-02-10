@@ -23,7 +23,8 @@ if __name__ == '__main__':
 
     loader = dl.DataLoader(data_type=data_type)
     recorder = fr.FeatureRecorder()
-    file_paths = loader.gather_data('tfrecord', include_labels=False)
+
+    file_paths = loader.gather_data('.c.tfrecord', include_labels=False)
 
     # Get the splits
     training, validation, testing = MlAlgoC.split_dataframe_gtzan(file_paths)
