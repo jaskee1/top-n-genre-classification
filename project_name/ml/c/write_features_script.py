@@ -1,10 +1,5 @@
 import sys
-# import os
 import time
-
-# script_dir = os.path.dirname(__file__)
-# mymodule_dir = os.path.join(script_dir, '..', '..')
-# sys.path.append(mymodule_dir)
 
 import project_name.data.data_loader as dl           # noqa: E402
 import project_name.data.feature_extractor as fe     # noqa: E402
