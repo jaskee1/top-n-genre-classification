@@ -1,12 +1,9 @@
 import sys
-# import os
 import time
 
-from ml_c import MlAlgoC
+import tensorflow as tf
 
-# script_dir = os.path.dirname(__file__)
-# mymodule_dir = os.path.join(script_dir, '..', '..')
-# sys.path.append(mymodule_dir)
+from project_name.ml.c.ml_algo_c import MlAlgoC
 
 import project_name.data.data_loader as dl           # noqa: E402
 import project_name.data.feature_recorder as fr      # noqa: E402
@@ -26,20 +23,26 @@ if __name__ == '__main__':
 
     loader = dl.DataLoader(data_type=data_type)
     recorder = fr.FeatureRecorder()
-    ml_algo = MlAlgoC()
-
     file_paths = loader.gather_data('tfrecord', include_labels=False)
 
     # Get the splits
-    training, validation, testing = ml_algo.split_dataframe_gtzan(file_paths)
-    # Create smart tensorflow dataset objects that can load the data
-    training = ml_algo.create_dataset(file_paths)
-    validation = ml_algo.create_dataset(file_paths)
-    testing = ml_algo.create_dataset(file_paths)
+    training, validation, testing = MlAlgoC.split_dataframe_gtzan(file_paths)
+    # Create smart tensorflow dataset objects that can load the data on demand
+    training = MlAlgoC.create_dataset(file_paths)
+    validation = MlAlgoC.create_dataset(file_paths)
+    testing = MlAlgoC.create_dataset(file_paths)
 
     # Get previously trained algo to train it some more!
     if LOAD_ALGO:
-        ml_algo.load_model()
+        ml_algo = MlAlgoC(load_path=MlAlgoC.MODEL_PATH)
+    # Build the algo model from scratch and train it
+    else:
+        # We have to retrieve 1 element (acutally 1 batch) to inspect the data
+        # shape, which we need to properly set up the ML model input/output.
+        for elem in training.take(1):
+            input_shape = tf.shape(elem[0])[1:].numpy()
+            label_shape = tf.shape(elem[1])[1:].numpy()
+        ml_algo = MlAlgoC(input_shape=input_shape, output_shape=label_shape)
 
     # Compile the model and fit the training data
     ml_algo.compile_model()
