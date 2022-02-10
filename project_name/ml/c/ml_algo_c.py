@@ -71,23 +71,28 @@ class MlAlgoC:
         model = keras.models.Sequential([
             keras.Input(shape=input_shape),
             keras.layers.BatchNormalization(),
-            keras.layers.Conv2D(filters=32, kernel_size=3, strides=4,
+            keras.layers.Conv2D(filters=64, kernel_size=5, strides=2,
                                 activation='relu', padding='same'),
             keras.layers.MaxPooling2D(2),
-            keras.layers.Conv2D(64, 3, activation='relu', strides=2,
+            keras.layers.Conv2D(128, 3, activation='relu', strides=2,
                                 padding='same'),
-            keras.layers.Conv2D(64, 3, activation='relu', strides=2,
+            keras.layers.Conv2D(128, 3, activation='relu', strides=2,
+                                padding='same'),
+            keras.layers.MaxPooling2D(2),
+            keras.layers.Conv2D(256, 3, activation='relu', strides=1,
+                                padding='same'),
+            keras.layers.Conv2D(256, 3, activation='relu', strides=1,
                                 padding='same'),
             keras.layers.MaxPooling2D(2),
             keras.layers.Flatten(),
-            keras.layers.Dense(128, activation='relu'),
+            keras.layers.Dense(256, activation='relu'),
             keras.layers.Dropout(0.5),
-            keras.layers.Dense(64, activation='relu'),
+            keras.layers.Dense(128, activation='relu'),
             keras.layers.Dropout(0.5),
             keras.layers.Dense(output_shape, activation='softmax')
         ])
 
-        # print(model.summary())
+        print(model.summary())
 
         return model
 

@@ -43,11 +43,12 @@ if __name__ == '__main__':
         for elem in training.take(1):
             input_shape = tf.shape(elem[0])[1:].numpy()
             label_shape = tf.shape(elem[1])[1:].numpy()
+            print(input_shape)
         ml_algo = MlAlgoC(input_shape=input_shape, output_shape=label_shape)
 
     # Compile the model and fit the training data
     ml_algo.compile_model()
-    ml_algo.model.fit(training, epochs=80, validation_data=validation)
+    ml_algo.model.fit(training, epochs=50, validation_data=validation)
     # Evaluate performance on the test set
     ml_algo.model.evaluate(testing)
     # Save our trained algo for future usage

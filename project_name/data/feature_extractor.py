@@ -130,10 +130,10 @@ class FeatureExtractor:
             array of float16 representing the log mel spectrogram
         """
 
-        N_FFT = 2048
         HOP_LENGTH = 512
+        N_FFT = HOP_LENGTH * 2
         N_MELS = 64
-        LOG_MEL_REF = np.min
+        LOG_MEL_REF = np.max
         OUTPUT_VAR_TYPE = np.float16
 
         ts, sr = self.load_normalized(filename)
