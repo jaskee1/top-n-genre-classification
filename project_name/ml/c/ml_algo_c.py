@@ -32,7 +32,7 @@ class MlAlgoC:
 
     @staticmethod
     def create_dataset(dataframe, shuffle_buffer_size=10000,
-                       n_parse_threads=5, batch_size=32):
+                       n_parse_threads=5, batch_size=32, cache=True):
         """
         """
         recorder = fr.FeatureRecorder()
@@ -50,7 +50,8 @@ class MlAlgoC:
 
         # Cache the dataset so it doesn't have to prepared again for
         # every epoch
-        # dataset = dataset.cache()
+        if cache:
+            dataset = dataset.cache()
         # Apply shuffling for order randomization
         dataset = dataset.shuffle(shuffle_buffer_size)
         # Get batches, with prefetching for the next batch
