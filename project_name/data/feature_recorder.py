@@ -53,11 +53,11 @@ class FeatureRecorder:
         with tf.io.TFRecordWriter(filename) as f:
             f.write(protobuf.SerializeToString())
 
-    def read_tfrecord(self, file_path):
+    def read_tfrecord(self, file_path, extension):
         """
         """
         # Use a Path object to make use of the .with_suffix method.
-        filename = str(Path(file_path).with_suffix('.tfrecord'))
+        filename = str(Path(file_path).with_suffix(extension))
         feature_des = tf.io.FixedLenFeature([], tf.string, default_value='')
         feature_description = {
                 x[0]: feature_des for x in self.feature_descriptor
