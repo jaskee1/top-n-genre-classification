@@ -86,11 +86,6 @@ class FeatureExtractor:
         filename : str
             The audio file to load
 
-        Raises
-        ------
-        AudioLengthError
-            If audio is shorter than self.audio_length
-
         Returns
         ------
         numpy.array
