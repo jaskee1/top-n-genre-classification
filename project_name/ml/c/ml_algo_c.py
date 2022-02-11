@@ -56,19 +56,6 @@ class MlAlgoC:
         # Get batches, with prefetching for the next batch
         return dataset.batch(batch_size).prefetch(1)
 
-    @staticmethod
-    def split_dataframe_gtzan(data, train_size=75,
-                              valid_size=15, test_size=10):
-        """
-        """
-        test_start = train_size + valid_size
-        training = data[data.index % 100 < train_size]
-        validation = data[
-            (data.index % 100 >= train_size) & (data.index % 100 < test_start)]
-        testing = data[data.index % 100 >= test_start]
-
-        return (training, validation, testing)
-
     def _build_model(self, input_shape, output_shape):
         """
         """
