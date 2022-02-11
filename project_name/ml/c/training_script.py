@@ -9,6 +9,7 @@ from project_name.ml.c.ml_algo_c import MlAlgoC
 
 # Are we loading or training from a fresh state?
 LOAD_ALGO = False
+SAVE_ALGO = True
 # Are we using the resnet algo_c variant?
 USE_RESNET = True
 
@@ -75,7 +76,8 @@ if __name__ == '__main__':
     ml_algo.model.evaluate(test)
 
     # Save our trained algo for future usage
-    if USE_RESNET:
-        ml_algo.save_model(path=MlAlgoC.MODEL_RESNET_PATH)
-    else:
-        ml_algo.save_model(path=MlAlgoC.MODEL_PATH)
+    if SAVE_ALGO:
+        if USE_RESNET:
+            ml_algo.save_model(path=MlAlgoC.MODEL_RESNET_PATH)
+        else:
+            ml_algo.save_model(path=MlAlgoC.MODEL_PATH)
