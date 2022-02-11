@@ -101,17 +101,24 @@ class FeatureExtractor:
 
         duration = librosa.get_duration(filename=filename)
         if (duration < self.audio_length):
-            raise AudioLengthError(filename, duration, self.audio_length)
+            # raise AudioLengthError(filename, duration, self.audio_length)
+            padding = 0.0
+        else:
+            # Use padding to ensure the audio is taken from the middle of the
+            # clip when the audio clip is longer than the sought load length.
+            padding = (duration - self.audio_length) / 2
 
-        # Use padding to ensure the audio is taken from the middle of the clip
-        # when the audio clip is longer than the sought load length.
-        padding = (duration - self.audio_length) / 2
+        ts, sr = librosa.load(filename,
+                              sr=self.sample_rate,
+                              mono=self.mono,
+                              duration=self.audio_length,
+                              offset=padding)
 
-        return librosa.load(filename,
-                            sr=self.sample_rate,
-                            mono=self.mono,
-                            duration=self.audio_length,
-                            offset=padding)
+        # Pad with 0s if the audio is too short
+        if (duration < self.audio_length):
+            ts = librosa.util.fix_length(ts, size=int(sr * self.audio_length))
+
+        return (ts, sr)
 
     def _extract_C(self, filename):
         """
@@ -130,7 +137,8 @@ class FeatureExtractor:
             array of float16 representing the log mel spectrogram
         """
 
-        HOP_LENGTH = 512
+        HOP_LENGTH = 1024
+        HOP_LENGTH = HOP_LENGTH if self.sample_rate < 40000 else HOP_LENGTH * 2
         N_FFT = HOP_LENGTH * 2
         N_MELS = 64
         LOG_MEL_REF = np.max
