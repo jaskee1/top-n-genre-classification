@@ -10,7 +10,7 @@ DEBUG = False
 if __name__ == '__main__':
 
     data_type = 'fma'
-    fma_set = 'small'
+    fma_set = 'medium'
 
     # Some options for datatype and fma_set on the command line
     if len(sys.argv) > 1:
@@ -46,20 +46,9 @@ if __name__ == '__main__':
         try:
             # Extract the features
             features = extractor.extract(file_path)
-
-            # We will break each feature set up into 10 parts and treat
-            # each part as an individual example.
-            part_len = features.shape[1] // 10
-            # We'll back all 10 protobufs and then write them into
-            # a single tfrecord file at the end.
-            protobufs = []
-            for i in range(10):
-                # Get each part and pack it into its own protobuf, along
-                # with inherited label from the original.
-                part = features[:, part_len * i:part_len * (i + 1)]
-                protobufs.append(recorder.packIntoProtobuf([part, label]))
-
-            # Write all parts for this audio clip to a binary .tfrecord file
+            # Pack the features into a protobuf
+            protobufs = [recorder.packIntoProtobuf([features, label])]
+            # Write the protobuf to a binary .tfrecord file
             recorder.write_tfrecord(protobufs, file_path, '.c.tfrecord')
 
             if DEBUG and index < 1:
