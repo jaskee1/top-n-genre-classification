@@ -9,7 +9,7 @@ class DataLoader:
 
     DATA_DIR = __file__ + '/../../resources'
     DATA_TYPE = 'gtzan'
-    FMA_SET = 'small'
+    FMA_SUBSETS = ('small', 'medium', 'large')
     # Training / validation / test split.
     # Out of 100 so we can work with integers.
     # If you don't need both validation and test, just add the two sets
@@ -21,7 +21,7 @@ class DataLoader:
                  data_dir=DATA_DIR,
                  gtzan_dir=None,
                  fma_dir=None,
-                 fma_set=FMA_SET):
+                 fma_set=FMA_SUBSETS[0]):
         """
         """
 
@@ -56,6 +56,35 @@ class DataLoader:
             genres = pd.read_csv(self.fma_meta_dir / 'genres.csv',
                                  index_col=0,
                                  usecols=['genre_id', 'title'])
+            # genres = [
+            #     'Hip-Hop',
+            #     'Pop',
+            #     'Folk',
+            #     'Experimental',
+            #     'Rock',
+            #     'International',
+            #     'Electronic',
+            #     'Instrumental'
+            # ]
+            # genres = [
+            #     'Hip-Hop',
+            #     'Pop',w
+            #     'Folk',
+            #     'Experimental',
+            #     'Rock',
+            #     'International',
+            #     'Electronic',
+            #     'Instrumental'
+            #     'Classical',
+            #     'Old-Time / Historic',
+            #     'Jazz',
+            #     'Country',
+            #     'Soul-RnB',
+            #     'Spoken',
+            #     'Blues',
+            #     'Easy Listening'
+            # ]
+            # genres = pd.DataFrame({'title': genres})
             self.genre_dict = {v: i for i, v in enumerate(genres['title'])}
 
         else:
@@ -98,7 +127,13 @@ class DataLoader:
                              header=1,
                              usecols=[0, 31, 32, 40, 41, 42],
                              skiprows=[2])
-        tracks = tracks[tracks['subset'] == self.fma_set]
+        # Setting categorical type here allows us to use the next line.
+        tracks['subset'] = tracks['subset'].astype(
+            pd.CategoricalDtype(categories=self.FMA_SUBSETS, ordered=True)
+        )
+        # Now we can select the specified subset and all lower sets.
+        # For example, medium subset gives medium and small entries.
+        tracks = tracks[tracks['subset'] <= self.fma_set]
         # Prune tracks with invalid genre entries
         tracks = tracks.dropna(subset='genre_top')
 
