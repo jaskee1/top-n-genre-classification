@@ -46,15 +46,27 @@ if __name__ == '__main__':
         try:
             # Extract the features
             features = extractor.extract(file_path)
-            # Pack features and label into a protobuf for writing to disk
-            protobuf = recorder.packIntoProtobuf([features, label])
-            # Write them to a binary .tfrecord file
-            recorder.write_tfrecord(protobuf, file_path, '.c.tfrecord')
 
-            if DEBUG and index < 10:
+            # We will break each feature set up into 10 parts and treat
+            # each part as an individual example.
+            part_len = features.shape[1] // 10
+            # We'll back all 10 protobufs and then write them into
+            # a single tfrecord file at the end.
+            protobufs = []
+            for i in range(10):
+                # Get each part and pack it into its own protobuf, along
+                # with inherited label from the original.
+                part = features[:, part_len * i:part_len * (i + 1)]
+                protobufs.append(recorder.packIntoProtobuf([part, label]))
+
+            # Write all parts for this audio clip to a binary .tfrecord file
+            recorder.write_tfrecord(protobufs, file_path, '.c.tfrecord')
+
+            if DEBUG and index < 1:
                 print(recorder.read_tfrecord(file_path, '.c.tfrecord'))
-            if DEBUG and index == 10:
+            if DEBUG and index == 1:
                 break
+
         except Exception:
             print(f'Could not extract features from {file_path}')
 
