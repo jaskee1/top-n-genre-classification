@@ -42,7 +42,7 @@ class FeatureExtractor:
     SR_STANDARD = 44100
     SR_HIGH = 48000
     # Audio length in seconds
-    AU_LEN_STANDARD = 29.9
+    AU_LEN_STANDARD = 29.8
     # Load audio in single channel
     MONO = True
 
@@ -132,9 +132,9 @@ class FeatureExtractor:
             array of float16 representing the log mel spectrogram
         """
 
-        HOP_LENGTH = 1024
+        HOP_LENGTH = 512
         HOP_LENGTH = HOP_LENGTH if self.sample_rate < 40000 else HOP_LENGTH * 2
-        N_FFT = HOP_LENGTH * 2
+        N_FFT = int(HOP_LENGTH * 2.5)
         N_MELS = 64
         LOG_MEL_REF = np.max
         OUTPUT_VAR_TYPE = np.float16
