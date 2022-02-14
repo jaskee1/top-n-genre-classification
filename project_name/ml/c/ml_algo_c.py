@@ -93,40 +93,6 @@ class MlAlgoC:
             keras.layers.Dense(output_shape, activation='softmax')
         ])
 
-        # model = keras.models.Sequential([
-        #     keras.Input(shape=input_shape),
-        #     keras.layers.BatchNormalization(),
-
-        #     keras.layers.Conv2D(filters=8, kernel_size=3, strides=1),
-        #     keras.layers.BatchNormalization(axis=3),
-        #     keras.layers.Activation('relu'),
-        #     keras.layers.MaxPool2D(2),
-
-        #     keras.layers.Conv2D(filters=16, kernel_size=3, strides=1),
-        #     keras.layers.BatchNormalization(axis=3),
-        #     keras.layers.Activation('relu'),
-        #     keras.layers.MaxPool2D(2),
-
-        #     keras.layers.Conv2D(filters=32, kernel_size=3, strides=1),
-        #     keras.layers.BatchNormalization(axis=3),
-        #     keras.layers.Activation('relu'),
-        #     keras.layers.MaxPool2D(2),
-
-        #     keras.layers.Conv2D(filters=64, kernel_size=3, strides=1),
-        #     keras.layers.BatchNormalization(axis=-1),
-        #     keras.layers.Activation('relu'),
-        #     # keras.layers.MaxPool2D(2),
-
-        #     keras.layers.Conv2D(filters=128, kernel_size=3, strides=1),
-        #     keras.layers.BatchNormalization(axis=-1),
-        #     keras.layers.Activation('relu'),
-        #     # keras.layers.MaxPool2D(2),
-
-        #     keras.layers.Flatten(),
-        #     keras.layers.Dropout(0.3),
-        #     keras.layers.Dense(output_shape, activation='softmax')
-        # ])
-
         print(model.summary())
 
         return model
