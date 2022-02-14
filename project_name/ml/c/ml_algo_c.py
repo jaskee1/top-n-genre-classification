@@ -12,6 +12,15 @@ class MlAlgoC:
     MODEL_PATH = Path(__file__ + '/../algo_c_model.h5')
     MODEL_RESNET_PATH = Path(__file__ + '/../algo_c_resnet_model.h5')
 
+    METRICS = [
+        'categorical_accuracy',
+        # Top 1 is same as categorical accuracy
+        # tf.keras.metrics.TopKCategoricalAccuracy(k=1, name='top_1'),
+        tf.keras.metrics.TopKCategoricalAccuracy(k=2, name='top_2'),
+        tf.keras.metrics.TopKCategoricalAccuracy(k=3, name='top_3'),
+        tf.keras.metrics.TopKCategoricalAccuracy(k=5, name='top_5'),
+    ]
+
     def __init__(self, load_path=None,
                  input_shape=(64, 1288, 1),
                  output_shape=(10),
@@ -32,7 +41,7 @@ class MlAlgoC:
 
     @staticmethod
     def create_dataset(dataframe, shuffle_buffer_size=10000,
-                       n_parse_threads=5, batch_size=32, cache=True):
+                       n_parse_threads=5, batch_size=128, cache=True):
         """
         """
         recorder = fr.FeatureRecorder()
@@ -84,6 +93,40 @@ class MlAlgoC:
             keras.layers.Dense(output_shape, activation='softmax')
         ])
 
+        # model = keras.models.Sequential([
+        #     keras.Input(shape=input_shape),
+        #     keras.layers.BatchNormalization(),
+
+        #     keras.layers.Conv2D(filters=8, kernel_size=3, strides=1),
+        #     keras.layers.BatchNormalization(axis=3),
+        #     keras.layers.Activation('relu'),
+        #     keras.layers.MaxPool2D(2),
+
+        #     keras.layers.Conv2D(filters=16, kernel_size=3, strides=1),
+        #     keras.layers.BatchNormalization(axis=3),
+        #     keras.layers.Activation('relu'),
+        #     keras.layers.MaxPool2D(2),
+
+        #     keras.layers.Conv2D(filters=32, kernel_size=3, strides=1),
+        #     keras.layers.BatchNormalization(axis=3),
+        #     keras.layers.Activation('relu'),
+        #     keras.layers.MaxPool2D(2),
+
+        #     keras.layers.Conv2D(filters=64, kernel_size=3, strides=1),
+        #     keras.layers.BatchNormalization(axis=-1),
+        #     keras.layers.Activation('relu'),
+        #     # keras.layers.MaxPool2D(2),
+
+        #     keras.layers.Conv2D(filters=128, kernel_size=3, strides=1),
+        #     keras.layers.BatchNormalization(axis=-1),
+        #     keras.layers.Activation('relu'),
+        #     # keras.layers.MaxPool2D(2),
+
+        #     keras.layers.Flatten(),
+        #     keras.layers.Dropout(0.3),
+        #     keras.layers.Dense(output_shape, activation='softmax')
+        # ])
+
         print(model.summary())
 
         return model
@@ -130,8 +173,8 @@ class MlAlgoC:
         return model
 
     def compile_model(self, loss='categorical_crossentropy',
-                      optimizer='adam',
-                      metrics=['categorical_accuracy']):
+                      optimizer=keras.optimizers.Adam(learning_rate=0.0005),
+                      metrics=METRICS):
         """
         """
         self.model.compile(loss=loss, optimizer=optimizer, metrics=metrics)
