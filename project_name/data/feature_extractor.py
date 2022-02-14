@@ -114,6 +114,25 @@ class FeatureExtractor:
 
         return (ts, sr)
 
+    def extract(self, filename):
+        """
+        Extract features from an audio file.
+
+        Resolves to the corresponding extraction function, depending on
+        the extraction variant (A, B, or C) set in the Feature Extractor
+        constructor.
+
+        Parameters
+        ----------
+        filename : str
+            The audio file to load
+
+        Returns
+        ------
+        results depend on specific extraction variant
+        """
+        pass
+
     def _extract_C(self, filename):
         """
         Feature extraction for ML algo C.
@@ -147,22 +166,3 @@ class FeatureExtractor:
 
         log_mel = librosa.power_to_db(mel, ref=LOG_MEL_REF)
         return log_mel.astype(OUTPUT_VAR_TYPE)
-
-    def extract(self, filename):
-        """
-        Extract features from an audio file.
-
-        Resolves to the corresponding extraction function, depending on
-        the extraction variant (A, B, or C) set in the Feature Extractor
-        constructor.
-
-        Parameters
-        ----------
-        filename : str
-            The audio file to load
-
-        Returns
-        ------
-        results depend on specific extraction variant
-        """
-        pass
