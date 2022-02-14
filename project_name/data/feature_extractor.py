@@ -57,7 +57,7 @@ class FeatureExtractor:
         variant : str
             The extraction variant (A, B, or C)
         sample_rate : int, optional
-            Rhe sample rate at which to load/resample audio
+            The sample rate at which to load/resample audio
         audio_length : float, optional
             The length, in seconds, of audio to read
         mono : bool, optional
@@ -72,8 +72,7 @@ class FeatureExtractor:
         # .extract() interface.
         if variant == "C":
             self.extract = self._extract_C
-        else:
-            self.extract = None
+        # Default self.extract is a blank function.
 
     def load_normalized(self, filename):
         """
@@ -148,3 +147,22 @@ class FeatureExtractor:
 
         log_mel = librosa.power_to_db(mel, ref=LOG_MEL_REF)
         return log_mel.astype(OUTPUT_VAR_TYPE)
+
+    def extract(self, filename):
+        """
+        Extract features from an audio file.
+
+        Resolves to the corresponding extraction function, depending on
+        the extraction variant (A, B, or C) set in the Feature Extractor
+        constructor.
+
+        Parameters
+        ----------
+        filename : str
+            The audio file to load
+
+        Returns
+        ------
+        results depend on specific extraction variant
+        """
+        pass
