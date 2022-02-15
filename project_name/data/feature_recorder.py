@@ -99,7 +99,7 @@ class FeatureRecorder:
         Returns
         ------
         tf.train.Example
-            a tensorflow Example protobug, ready to be written to a 
+            a tensorflow Example protobug, ready to be written to a
             .tfrecord file.
         """
 

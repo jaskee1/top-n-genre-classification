@@ -109,7 +109,7 @@ class DataLoader:
             # These can be used later if we want to clean up fma genre
             # lists to only include the small or medium genre sets.
             # Clean up at a later date.
-   
+
             # genres = [
             #     'Hip-Hop',
             #     'Pop',
