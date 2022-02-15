@@ -48,7 +48,7 @@ class MlAlgoC:
         # Get bytes from tfrecord files from the input dataframe
         dataset = tf.data.TFRecordDataset(dataframe['filename'])
         # Map the raw bytes to the properly parsed data
-        dataset = dataset.map(recorder.read_tfrecord_from_tfrecord_dataset,
+        dataset = dataset.map(recorder.parse_example,
                               num_parallel_calls=n_parse_threads)
         # Fix dimensionality -- we need an extra dimension since the CNN
         # expects an image-type input (ie, 2D, with a 3rd dimension for color
