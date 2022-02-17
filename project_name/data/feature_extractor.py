@@ -42,7 +42,7 @@ class FeatureExtractor:
     SR_STANDARD = 44100
     SR_HIGH = 48000
     # Audio length in seconds
-    AU_LEN_STANDARD = 29.9
+    AU_LEN_STANDARD = 29.8
     # Load audio in single channel
     MONO = True
 
@@ -57,7 +57,7 @@ class FeatureExtractor:
         variant : str
             The extraction variant (A, B, or C)
         sample_rate : int, optional
-            Rhe sample rate at which to load/resample audio
+            The sample rate at which to load/resample audio
         audio_length : float, optional
             The length, in seconds, of audio to read
         mono : bool, optional
@@ -72,8 +72,7 @@ class FeatureExtractor:
         # .extract() interface.
         if variant == "C":
             self.extract = self._extract_C
-        else:
-            self.extract = None
+        # Default self.extract is a blank function.
 
     def load_normalized(self, filename):
         """
@@ -86,11 +85,6 @@ class FeatureExtractor:
         filename : str
             The audio file to load
 
-        Raises
-        ------
-        AudioLengthError
-            If audio is shorter than self.audio_length
-
         Returns
         ------
         numpy.array
@@ -101,17 +95,43 @@ class FeatureExtractor:
 
         duration = librosa.get_duration(filename=filename)
         if (duration < self.audio_length):
-            raise AudioLengthError(filename, duration, self.audio_length)
+            # raise AudioLengthError(filename, duration, self.audio_length)
+            padding = 0.0
+        else:
+            # Use padding to ensure the audio is taken from the middle of the
+            # clip when the audio clip is longer than the sought load length.
+            padding = (duration - self.audio_length) / 2
 
-        # Use padding to ensure the audio is taken from the middle of the clip
-        # when the audio clip is longer than the sought load length.
-        padding = (duration - self.audio_length) / 2
+        ts, sr = librosa.load(filename,
+                              sr=self.sample_rate,
+                              mono=self.mono,
+                              duration=self.audio_length,
+                              offset=padding)
 
-        return librosa.load(filename,
-                            sr=self.sample_rate,
-                            mono=self.mono,
-                            duration=self.audio_length,
-                            offset=padding)
+        # Pad with 0s if the audio is too short
+        if (duration < self.audio_length):
+            ts = librosa.util.fix_length(ts, size=int(sr * self.audio_length))
+
+        return (ts, sr)
+
+    def extract(self, filename):
+        """
+        Extract features from an audio file.
+
+        Resolves to the corresponding extraction function, depending on
+        the extraction variant (A, B, or C) set in the Feature Extractor
+        constructor.
+
+        Parameters
+        ----------
+        filename : str
+            The audio file to load
+
+        Returns
+        ------
+        results depend on specific extraction variant
+        """
+        pass
 
     def _extract_C(self, filename):
         """
@@ -130,10 +150,11 @@ class FeatureExtractor:
             array of float16 representing the log mel spectrogram
         """
 
-        N_FFT = 2048
         HOP_LENGTH = 512
+        HOP_LENGTH = HOP_LENGTH if self.sample_rate < 40000 else HOP_LENGTH * 2
+        N_FFT = int(HOP_LENGTH * 2.5)
         N_MELS = 64
-        LOG_MEL_REF = np.min
+        LOG_MEL_REF = np.max
         OUTPUT_VAR_TYPE = np.float16
 
         ts, sr = self.load_normalized(filename)
