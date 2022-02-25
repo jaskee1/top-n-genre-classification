@@ -1,8 +1,10 @@
 from pathlib import Path
 
+import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 
+import project_name.data.feature_extractor as fe
 import project_name.data.feature_recorder as fr
 
 
@@ -24,9 +26,10 @@ class MlAlgoC:
     def __init__(self, load_path=None,
                  input_shape=(64, 1288, 1),
                  output_shape=(10),
-                 use_resnet=True):
+                 use_resnet=False):
         """
         """
+        self.use_resnet = use_resnet
         if load_path is None:
             if use_resnet:
                 self.model = self._build_model_resnet_34(input_shape,
@@ -36,8 +39,10 @@ class MlAlgoC:
         else:
             self.load_model(load_path)
 
-        # self.optimizer = keras.optimizers.SGD(lr=0.2,
-        #  momentum=0.9, decay=0.01)
+        self.extractor = fe.FeatureExtractor(
+            sample_rate=fe.FeatureExtractor.SR_LOW,
+            variant="C"
+        )
 
     @staticmethod
     def create_dataset(dataframe, shuffle_buffer_size=10000,
@@ -77,14 +82,18 @@ class MlAlgoC:
             keras.layers.MaxPooling2D(2),
             keras.layers.Conv2D(128, 3, activation='relu', strides=2,
                                 padding='same'),
-            keras.layers.Conv2D(128, 3, activation='relu', strides=2,
+            keras.layers.Conv2D(128, 3, activation='relu', strides=1,
                                 padding='same'),
             keras.layers.MaxPooling2D(2),
-            keras.layers.Conv2D(256, 3, activation='relu', strides=1,
+            keras.layers.Conv2D(256, 3, activation='relu', strides=2,
                                 padding='same'),
             keras.layers.Conv2D(256, 3, activation='relu', strides=1,
                                 padding='same'),
             keras.layers.MaxPooling2D(2),
+            # keras.layers.Conv2D(512, 3, activation='relu', strides=1,
+            #                     padding='same'),
+            # keras.layers.Conv2D(512, 3, activation='relu', strides=1,
+            #                     padding='same'),
             keras.layers.Flatten(),
             keras.layers.Dense(256, activation='relu'),
             keras.layers.Dropout(0.5),
@@ -123,14 +132,15 @@ class MlAlgoC:
         for filters in [64] * 3 + [128] * 4 + [256] * 6 + [512] * 3:
             strides = 1 if filters == prev_filters else 2
             model.add(ResidualUnit(filters, strides=strides))
+            model.add(keras.layers.Dropout(0.2))
             prev_filters = filters
 
         # Final fully connected layers leading to output
         model.add(keras.layers.GlobalAvgPool2D())
         model.add(keras.layers.Flatten())
-        model.add(keras.layers.Dense(512, activation='relu'))
+        model.add(keras.layers.Dense(256, activation='relu'))
         model.add(keras.layers.Dropout(0.5))
-        model.add(keras.layers.Dense(512, activation='relu'))
+        model.add(keras.layers.Dense(256, activation='relu'))
         model.add(keras.layers.Dropout(0.5))
         model.add(keras.layers.Dense(output_shape, activation='softmax'))
 
@@ -145,15 +155,35 @@ class MlAlgoC:
         """
         self.model.compile(loss=loss, optimizer=optimizer, metrics=metrics)
 
+    def prep_data_from_file(self, filepath):
+        """
+        """
+        features = self.extractor.extract(filepath)
+        # Getting extra dimension to simulate needed 'channel'
+        features = tf.expand_dims(features, axis=-1)
+        # Simulating the batch size needed for input to the model
+        # with an extra dimension
+        features = np.array([features])
+        return features
+
+    def predict(self, inputs):
+        return self.model(inputs, training=False)
+
     def save_model(self, path=MODEL_PATH):
         """
         """
-        self.model.save(path)
+        self.model.save(path, save_format='h5')
 
     def load_model(self, path=MODEL_PATH):
         """
         """
-        self.model = keras.models.load_model(path)
+        if self.use_resnet:
+            self.model = keras.models.load_model(
+                path,
+                custom_objects={"ResidualUnit": ResidualUnit}
+            )
+        else:
+            self.model = keras.models.load_model(path)
 
 
 # Code source (adapted from):

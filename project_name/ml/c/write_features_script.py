@@ -1,9 +1,9 @@
 import sys
 import time
 
-import project_name.data.data_loader as dl           # noqa: E402
-import project_name.data.feature_extractor as fe     # noqa: E402
-import project_name.data.feature_recorder as fr      # noqa: E402
+import project_name.data.data_loader as dl
+import project_name.data.feature_extractor as fe
+import project_name.data.feature_recorder as fr
 
 DEBUG = False
 
@@ -24,9 +24,12 @@ if __name__ == '__main__':
     if data_type == 'gtzan':
         sample_rate = fe.FeatureExtractor.SR_LOW
         filetype = '.au'
-    else:
+    elif data_type == 'fma':
         sample_rate = fe.FeatureExtractor.SR_STANDARD
         filetype = '.mp3'
+    elif data_type == 'prop':
+        sample_rate = fe.FeatureExtractor.SR_STANDARD
+        filetype = '.wav'
 
     # Used to gather up all files and associated them with labels.
     loader = dl.DataLoader(data_type=data_type, fma_set=fma_set)
@@ -35,10 +38,10 @@ if __name__ == '__main__':
     # Used to record extracted features in .tfrecord files
     recorder = fr.FeatureRecorder()
 
-    # This returns a pandas dataframe with filenames and labels.
     raw_data = loader.gather_data(filetype)
 
     start_time = time.time()
+    count = raw_data.shape[0]
 
     for index, row in raw_data.iterrows():
         file_path = row['filename']
@@ -51,7 +54,7 @@ if __name__ == '__main__':
             # Write the protobuf to a binary .tfrecord file
             recorder.write_tfrecord(protobufs, file_path, '.c.tfrecord')
 
-            if DEBUG and index < 1:
+            if DEBUG:
                 print(recorder.read_tfrecord(file_path, '.c.tfrecord'))
             if DEBUG and index == 1:
                 break
@@ -59,8 +62,10 @@ if __name__ == '__main__':
         except Exception:
             print(f'Could not extract features from {file_path}')
 
+        if index % 1000 == 0:
+            print(f'Completed {index} / {count}')
+
     stop_time = time.time()
-    count = raw_data.shape[0]
 
     print("processed {} audio tracks: {} seconds".format(
         count, (stop_time - start_time)))
