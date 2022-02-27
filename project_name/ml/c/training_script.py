@@ -1,24 +1,27 @@
 import sys
 import time
 
+import pandas as pd
 import tensorflow as tf
 
 import project_name.data.data_loader as dl
-import project_name.data.feature_recorder as fr
 from project_name.ml.c.ml_algo_c import MlAlgoC
 
 # Are we loading or training from a fresh state?
 LOAD_ALGO = False
 # Save the trained algo?
-SAVE_ALGO = False
+SAVE_ALGO = True
 # Are we using the resnet algo_c variant?
-USE_RESNET = True
+USE_RESNET = False
+# Train with the validation set as well
+# Use test set as validation at this point
+COMBINE_VALIDATION = True
 
 if __name__ == '__main__':
 
     start_time = time.time()
 
-    data_type = 'fma'
+    data_type = 'prop'
     fma_set = 'medium'
 
     if len(sys.argv) > 1:
@@ -36,18 +39,25 @@ if __name__ == '__main__':
     # Used to gather up all the files and associate them with splits and
     # labels.
     loader = dl.DataLoader(data_type=data_type, fma_set=fma_set)
-    # Used to load features from .tfrecord files
-    recorder = fr.FeatureRecorder()
 
     # Get filenames, labels, and splits
     metadata = loader.gather_data('.c.tfrecord', include_labels=False)
-    # print(metadata.shape)
-    # print(metadata)
-
     # Separate the splits
     training = metadata[metadata['split'] == 'training']
     validation = metadata[metadata['split'] == 'validation']
     test = metadata[metadata['split'] == 'test']
+
+    if COMBINE_VALIDATION:
+        training = pd.concat([training, validation])
+        validation = test
+
+    # print(metadata.shape)
+    # print(metadata)
+
+    # Do bagging (with replacement) on just the training set here
+    training = training.sample(frac=1, replace=True, random_state=42)
+    print(training)
+
     # Debug --- REMOVE LATER
     print('Splits:')
     print(training.shape)
@@ -84,8 +94,19 @@ if __name__ == '__main__':
 
     # Compile the model and fit the training data
     ml_algo.compile_model()
-    ml_algo.model.fit(training, epochs=40, validation_data=validation)
-    # Evaluate performance on the test set
+    # Using early stopping to automatically get best fit and to stop training
+    # once it's found.
+    earlyStop = tf.keras.callbacks.EarlyStopping(
+        monitor='val_categorical_accuracy',
+        patience=10,
+        restore_best_weights=True
+    )
+    ml_algo.model.fit(training, epochs=50, validation_data=validation,
+                      callbacks=[earlyStop])
+
+    # Evaluate performance on the test set. Note that if we're using
+    # combined validation, this will just run again on the validation set,
+    # which will be the same as optimal, saved results from earlier epoch
     ml_algo.model.evaluate(test)
 
     # Save our trained algo for future usage

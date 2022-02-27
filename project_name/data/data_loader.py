@@ -1,4 +1,5 @@
 from pathlib import Path
+
 import numpy as np
 import pandas as pd
 
@@ -31,19 +32,50 @@ class DataLoader:
     """
 
     DATA_DIR = __file__ + '/../../resources'
-    DATA_TYPE = 'gtzan'
     FMA_SUBSETS = ('small', 'medium', 'large')
     # Training / validation / test split.
     # Out of 100 so we can work with integers.
     # If you don't need both validation and test, just add the two sets
     # together later.
     SPLIT_VALS = [75, 15, 10]
+    SPLIT_BY_DIR = {
+        'fma_train_data': 'training',
+        'fma_val_data': 'validation',
+        'fma_test_data': 'test',
+    }
+    FMA_SMALL_GENRES = [
+        'Electronic',
+        'Experimental',
+        'Folk',
+        'Hip-Hop',
+        'Instrumental'
+        'International',
+        'Pop',
+        'Rock',
+    ]
+    FMA_MEDIUM_GENRES = [
+        'Blues',
+        'Classical',
+        'Country',
+        'Easy Listening',
+        'Electronic',
+        'Experimental',
+        'Folk',
+        'Hip-Hop',
+        'Instrumental',
+        'International',
+        'Jazz',
+        'Old-Time / Historic',
+        'Pop',
+        'Rock',
+        'Soul-RnB',
+        'Spoken',
+    ]
 
     def __init__(self,
-                 data_type=DATA_TYPE,
+                 data_type=None,
                  data_dir=DATA_DIR,
-                 gtzan_dir=None,
-                 fma_dir=None,
+                 target_dir=None,
                  fma_set=FMA_SUBSETS[0],
                  split_vals=SPLIT_VALS):
         """
@@ -57,14 +89,12 @@ class DataLoader:
             directories are located. Use if gtzan and fma directories
             are together in a non-default location, but otherwise
             have default naming and directory structure.
-        gtzan_dir : str, optional
-            Override for default gtzan directory. This should be a full
+        target_dir : str, optional
+            Override for default audio source directory. This should be a full
             system path string of the folder containing the 10 gtzan genre
-            folders.
-        fma_dir : str, optional
-            Override for default fma directory. This should be a full
-            system path string of the folder containing the 155 numbered
-            fma audio-containing folders.
+            folders, the 155 numbered fma audio-containing folders, or
+            a folder containing named genre folders with audio files inside
+            them.
         fma_set : str, optional
             Which fma set (small, medium, or large) to use.
         split_vals : list[int], optional
@@ -80,17 +110,15 @@ class DataLoader:
         # Set the data directory as a Path object and resolve
         # data-containing folders dependent upon input parameters
         data_dir = Path(data_dir)
-        if gtzan_dir is None:
-            self._gtzan_dir = data_dir / 'gtzan' / 'genres'
+        if target_dir is None and self.data_type == 'gtzan':
+            self._target_dir = data_dir / 'gtzan' / 'genres'
+        elif target_dir is None and self.data_type == 'fma':
+            self._target_dir = data_dir / 'fma' / f'fma_{self.fma_set}'
+            self._fma_meta_dir = self._target_dir / '..' / 'fma_metadata'
+        elif target_dir is None and self.data_type == 'prop':
+            self._target_dir = data_dir / 'prop'
         else:
-            self._gtzan_dir = Path(gtzan_dir)
-
-        if fma_dir is None:
-            self._fma_dir = data_dir / 'fma' / f'fma_{self.fma_set}'
-        else:
-            self._fma_dir = Path(fma_dir)
-
-        self._fma_meta_dir = self._fma_dir / '..' / 'fma_metadata'
+            self._target_dir = Path(target_dir)
 
         # Set up data type so the Data Processor can be customized
         # for compatibility with different datasets while maintaining a
@@ -98,72 +126,64 @@ class DataLoader:
         if data_type == 'gtzan':
             self.gather_data = self._gather_data_gtzan
             self._genre_dict = {
-                v.name: i for i, v in enumerate(self._gtzan_dir.iterdir())}
+                v.name: i for i, v in enumerate(self._target_dir.iterdir())}
 
         elif data_type == 'fma':
             self.gather_data = self._gather_data_fma
-            genres = pd.read_csv(self._fma_meta_dir / 'genres.csv',
-                                 index_col=0,
-                                 usecols=['genre_id', 'title'])
-
-            # These can be used later if we want to clean up fma genre
-            # lists to only include the small or medium genre sets.
-            # Clean up at a later date.
-
-            # genres = [
-            #     'Hip-Hop',
-            #     'Pop',
-            #     'Folk',
-            #     'Experimental',
-            #     'Rock',
-            #     'International',
-            #     'Electronic',
-            #     'Instrumental'
-            # ]
-            # genres = [
-            #     'Hip-Hop',
-            #     'Pop',w
-            #     'Folk',
-            #     'Experimental',
-            #     'Rock',
-            #     'International',
-            #     'Electronic',
-            #     'Instrumental'
-            #     'Classical',
-            #     'Old-Time / Historic',
-            #     'Jazz',
-            #     'Country',
-            #     'Soul-RnB',
-            #     'Spoken',
-            #     'Blues',
-            #     'Easy Listening'
-            # ]
-            # genres = pd.DataFrame({'title': genres})
+            # Source the genre list from the full genres.csv file.
+            if self.fma_set == 'large':
+                genres = pd.read_csv(self._fma_meta_dir / 'genres.csv',
+                                     index_col=0,
+                                     usecols=['genre_id', 'title'])
+            # Hard-coded, abbreviated genre lists
+            else:
+                if self.fma_set == 'small':
+                    genres = self.FMA_SMALL_GENRES
+                elif self.fma_set == 'medium':
+                    genres = self.FMA_MEDIUM_GENRES
+                genres = pd.DataFrame({'title': genres})
 
             self._genre_dict = {v: i for i, v in enumerate(genres['title'])}
 
+        elif data_type == 'prop':
+            self.gather_data = self._gather_data_prop
+            label_dir = self._target_dir / 'fma_train_data'
+            self._genre_dict = {
+                v.name: i for i, v in enumerate(label_dir.iterdir())}
         else:
             self._genre_dict = {}
 
         self._genre_inverse_dict = {v: k for k, v in self._genre_dict.items()}
 
-    def gather_data(self, file_extension, include_labels=True):
+    def gather_data(
+        self,
+        directory,
+        file_extension,
+        include_labels=True,
+        include_splits=True
+    ):
         """
-        Gather files with the given extension and associate them
-        with labels and a test/validate/train split.
+        Gather files with the given extension from the given directory
+        and associate them with labels and a test/validate/train split.
 
-        Resolves to the corresponding function, depending on the data
-        type (gtzan or fma) set in the Data Loader constructor. In either
-        case, it will collect files with the given file_extension
-        from the appropriate folder.
+        For use with generic dataset. Labels are based on the genre
+        folders in the directory. Splits are based on the split_vals
+        set in the Data Loader constructor, and are simply based on
+        the order of the audio files in the folders.
 
         Parameters
         ----------
+        directory : str
+            The parent folder that contains all audio files we want.
+            Beneath this folder should be genre folders containing the
+            actual audio files.
         file_extension : str
             The file extension of files we want to gather. Should include
             the leading dot. Examples: '.mp3', '.au', '.c.tfrecord'.
         include_labels : bool, optional
             Whether to include the labels column in the returned results
+        include_splits : bool, optional
+            Whether to include the split column in the returned results
 
         Returns
         ------
@@ -177,15 +197,107 @@ class DataLoader:
             'validation', or 'test'. If 'validation' and 'test' are not
             both needed, they can be added together to get a single set.
         """
-        pass
+        dir = Path(directory)
 
-    def _gather_data_gtzan(self, file_extension, include_labels=True):
+        file_paths = np.array(list(dir.rglob(f'*{file_extension}')))
+
+        if include_labels:
+            genre_labels = [
+                self._get_label(self._genre_dict[x.parent.name])
+                for x in file_paths
+            ]
+            data = pd.DataFrame({'filename': file_paths,
+                                 'label': genre_labels})
+        else:
+            data = pd.DataFrame({'filename': file_paths})
+
+        if include_splits:
+            # Assign splits based on each item's index and add
+            # them to the dataframe as a new column
+            data['split'] = data.index.map(self._assign_split_by_index)
+
+        # Change the Path objects to strings
+        data['filename'] = data['filename'].map(str)
+
+        return data
+
+    def _gather_data_prop(
+            self,
+            file_extension,
+            include_labels=True,
+            include_splits=True
+    ):
+        """
+        Gather files with the given extension from the given directory
+        and associate them with labels and a test/validate/train split.
+
+        For use with generic dataset. Labels are based on the genre
+        folders in the directory. Splits are based on the split_vals
+        set in the Data Loader constructor, and are simply based on
+        the order of the audio files in the folders.
+
+        Parameters
+        ----------
+        directory : str
+            The parent folder that contains all audio files we want.
+            Beneath this folder should be genre folders containing the
+            actual audio files.
+        file_extension : str
+            The file extension of files we want to gather. Should include
+            the leading dot. Examples: '.mp3', '.au', '.c.tfrecord'.
+        include_labels : bool, optional
+            Whether to include the labels column in the returned results
+        include_splits : bool, optional
+            Whether to include the split column in the returned results
+
+        Returns
+        ------
+        pandas.DataFrame
+            A dataframe where each row represents a file. Columns are
+            'filename', 'label', and 'split'.
+            Filename is the full path string to the file.
+            Label is an array of 0s with 1s for any genre(s) the file
+            is labeled with.
+            Split represents the split the file belongs to as 'training',
+            'validation', or 'test'. If 'validation' and 'test' are not
+            both needed, they can be added together to get a single set.
+        """
+
+        file_paths = np.array(
+            list(self._target_dir.rglob(f'*{file_extension}')))
+
+        if include_labels:
+            genre_labels = [
+                self._get_label(self._genre_dict[x.parent.name])
+                for x in file_paths
+            ]
+            data = pd.DataFrame({'filename': file_paths,
+                                 'label': genre_labels})
+        else:
+            data = pd.DataFrame({'filename': file_paths})
+
+        if include_splits:
+            # Assign splits based on each item's split dir ancestor and add
+            # them to the dataframe as a new column
+            data['split'] = data['filename'].map(self._assign_split_by_folder)
+
+        # Change the Path objects to strings
+        data['filename'] = data['filename'].map(str)
+
+        return data
+
+    def _gather_data_gtzan(
+        self,
+        file_extension,
+        include_labels=True,
+        include_splits=True
+    ):
         """
         Gather files with the given extension and associate them
         with labels and a test/validate/train split.
 
         For use with the gtzan dataset. Labels are based on the genre
-        folders in the gtzan_dir. Splits are based on the split_vals
+        folders in the target_dir. Splits are based on the split_vals
         set in the Data Loader constructor, and are simply based on
         the order of the audio files in the folders.
 
@@ -196,6 +308,8 @@ class DataLoader:
             the leading dot. Examples: '.mp3', '.au', '.c.tfrecord'.
         include_labels : bool, optional
             Whether to include the labels column in the returned results
+        include_splits : bool, optional
+            Whether to include the split column in the returned results
 
         Returns
         ------
@@ -210,7 +324,7 @@ class DataLoader:
             both needed, they can be added together to get a single set.
         """
         file_paths = np.array(
-            list(self._gtzan_dir.rglob(f'*{file_extension}')))
+            list(self._target_dir.rglob(f'*{file_extension}')))
 
         if include_labels:
             genre_labels = [
@@ -222,16 +336,22 @@ class DataLoader:
         else:
             data = pd.DataFrame({'filename': file_paths})
 
-        # Assign splits based on each item's index and add
-        # them to the dataframe as a new column
-        data['split'] = data.index.map(self._assign_split)
+        if include_splits:
+            # Assign splits based on each item's index and add
+            # them to the dataframe as a new column
+            data['split'] = data.index.map(self._assign_split_by_index)
 
         # Change the Path objects to strings
         data['filename'] = data['filename'].map(str)
 
         return data
 
-    def _gather_data_fma(self, file_extension, include_labels=True):
+    def _gather_data_fma(
+        self,
+        file_extension,
+        include_labels=True,
+        include_splits=True
+    ):
         """
         Gather files with the given extension and associate them
         with labels and a test/validate/train split.
@@ -284,7 +404,10 @@ class DataLoader:
         # Treat the index column as a real data column
         tracks = tracks.reset_index()
         # Select only the columns we care about
-        tracks = tracks[['index', 'genre_top', 'split']]
+        if include_splits:
+            tracks = tracks[['index', 'genre_top', 'split']]
+        else:
+            tracks = tracks[['index', 'genre_top']]
 
         # Map the track ids to their associated filenames as Path objects,
         # including the file_extension being sought.
@@ -311,7 +434,7 @@ class DataLoader:
 
         return tracks
 
-    def _assign_split(self, id):
+    def _assign_split_by_index(self, id):
         """
         Assign a split to a gtzan track based on self.split_vals.
 
@@ -340,6 +463,29 @@ class DataLoader:
 
         return split
 
+    def _assign_split_by_folder(self, filepath):
+        """
+        Assign a split to a track based on it's ancestor folder name.
+
+        Parameters
+        ----------
+        filepath : Path
+            Used to determine which split to assign the track to. Starting
+            at path, go up 2 levels to find the appropriate split folder.
+
+        Returns
+        ------
+        str
+            the split assignment of the track as 'training', 'validation',
+            or 'test'
+        """
+        split = ''
+        ancestor_name = filepath.parent.parent.name
+
+        split = self.SPLIT_BY_DIR[ancestor_name]
+
+        return split
+
     def _get_filename_fma(self, file_id, file_extension):
         """
         Generate the associated filename of an fma track based on its
@@ -365,7 +511,7 @@ class DataLoader:
         file_id_str = '{:06d}'.format(file_id)
         # Get the full file path based on where the data is stored, appending
         # the folder and filename
-        path = self._fma_dir / file_id_str[:3] / file_id_str
+        path = self._target_dir / file_id_str[:3] / file_id_str
         # Add the file extension
         path = path.with_suffix(file_extension)
         return path
