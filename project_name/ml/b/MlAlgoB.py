@@ -2,9 +2,14 @@
 import os
 import tensorflow as tf
 import keras
+import librosa
+import librosa.display
+import numpy as np
+import matplotlib.pyplot as plt
 from keras.layers import (Dense, BatchNormalization, Flatten,
                           Conv2D, Dropout, MaxPooling2D)
-from keras.preprocessing.image import ImageDataGenerator
+from keras.preprocessing.image import ImageDataGenerator, img_to_array, load_img
+
 
 
 class MlAlgoB:
@@ -106,6 +111,44 @@ class MlAlgoB:
                                                           batch_size=batch_size)
 
         return train_generator, test_generator
+      
+    def convert_audio_to_numpy_array(self, audio_file_path: str):
+      """ Converts audio file to np array representation of mel spectrogram
+
+      Keyword arguments:
+      audio_file_path -- Path to audio file
+      """
+      
+      # Read audio file
+      y, sr = librosa.load(audio_file_path)
+      mels = librosa.feature.melspectrogram(y=y, sr=sr)
+      
+      # Create plot and temp save
+      plt.Figure()
+      plt.imshow(librosa.power_to_db(mels, ref=np.max))
+      plt.savefig("temp_mel.jpg")
+      
+      # Read plot in as 4D numpy array
+      img_data = img_to_array(load_img(r'temp_mel.jpg', 
+                    target_size=(288, 432), color_mode="rgba")) / 255
+      img_data = np.expand_dims(img_data, axis = 0)
+      
+      # Remove temp plot and return np_array
+      os.remove("temp_mel.jpg")
+      return img_data
+    
+    def predict_genre(self, audio_file_path: str):
+      """ Makes genre prediciton for provided audio file, returning probability
+      array
+
+      Keyword arguments:
+      audio_file_path -- Path to audio file
+      """
+      
+      # Convert audio to np array and make prediction
+      img_data = self.convert_audio_to_numpy_array(audio_file_path)
+      return self.model.predict(img_data, verbose=3)
+      
 
     def compile_model(self, loss='categorical_crossentropy',
                       optimizer=tf.keras.optimizers.Adam(
