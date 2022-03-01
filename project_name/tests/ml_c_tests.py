@@ -19,7 +19,7 @@ def prediction_test():
     loader = dl.DataLoader(data_type=data_type, fma_set=fma_set)
     # Get filenames, labels, and splits
     data = loader.gather_data('.wav')
-    # Do bagging (with replacement) on just the training set here
+    # Isolate a few random files from the test split
     test = data[data['split'] == 'test']
     test = test.sample(n=10)
 
@@ -31,7 +31,6 @@ def prediction_test():
     else:
         ml_algo = MlAlgoC(load_path=MlAlgoC.MODEL_PATH)
 
-    # for filepath in test['filename']:
     for index, row in test.iterrows():
         filepath = row['filename']
         label = row['label']
@@ -59,7 +58,6 @@ def prediction_test_custom_music(filepaths):
     else:
         ml_algo = MlAlgoC(load_path=MlAlgoC.MODEL_PATH)
 
-    # for filepath in test['filename']:
     for index, row in test.iterrows():
         filepath = row['filename']
         features = ml_algo.prep_data_from_file(filepath)
@@ -70,7 +68,7 @@ def prediction_test_custom_music(filepaths):
 
 if __name__ == '__main__':
 
-    custom_paths_source = globals.RESOURCES_DIR/'text'/'test_file_paths.txt'
+    custom_paths_source = globals.RESOURCES_PATH/'text'/'test_file_paths.txt'
 
     # Run tests on manually picked local files whose paths are written
     # in the custom_paths_source file.

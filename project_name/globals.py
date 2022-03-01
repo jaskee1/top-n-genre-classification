@@ -1,6 +1,6 @@
 from pathlib import Path
 
-RESOURCES_DIR = Path(__file__).parent / 'resources'
+RESOURCES_PATH = Path(__file__).parent / 'resources'
 FMA_SMALL_GENRES = [
     'Electronic',
     'Experimental',

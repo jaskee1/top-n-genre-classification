@@ -47,7 +47,7 @@ class DataLoader:
 
     def __init__(self,
                  data_type=None,
-                 data_dir=globals.RESOURCES_DIR,
+                 data_dir=globals.RESOURCES_PATH,
                  target_dir=None,
                  fma_set=FMA_SUBSETS[0],
                  split_vals=SPLIT_VALS):
