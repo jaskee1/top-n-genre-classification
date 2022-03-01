@@ -16,7 +16,7 @@ class MlAlgoB:
     _accepted_data_sources = ("gtzan", "fma")
 
     def __init__(self, data_source: str = "gtzan", classes: int = 10,
-                 cwd: str = os.getcwd()):
+                 model_path = None, cwd: str = os.getcwd()):
 
         # Only accepting data sources that are currently implemented
         if data_source.lower() not in self._accepted_data_sources:
@@ -30,7 +30,7 @@ class MlAlgoB:
         self.cwd = cwd
 
         # Directory of model class
-        self._model_path = os.getcwd() + '\\algo_b_model.h5'
+        self._model_path = model_path or os.getcwd() + '\\algo_b_model.h5'
 
         # Loading existing CNN model if exists, else creating new one
         if os.path.exists(self._model_path):
