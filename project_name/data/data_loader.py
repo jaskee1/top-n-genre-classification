@@ -3,6 +3,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+import project_name.globals as globals
+
 
 class DataLoader:
     """
@@ -31,7 +33,6 @@ class DataLoader:
         Get the genre name corresponding to a genre_id.
     """
 
-    DATA_DIR = __file__ + '/../../resources'
     FMA_SUBSETS = ('small', 'medium', 'large')
     # Training / validation / test split.
     # Out of 100 so we can work with integers.
@@ -43,38 +44,10 @@ class DataLoader:
         'fma_val_data': 'validation',
         'fma_test_data': 'test',
     }
-    FMA_SMALL_GENRES = [
-        'Electronic',
-        'Experimental',
-        'Folk',
-        'Hip-Hop',
-        'Instrumental'
-        'International',
-        'Pop',
-        'Rock',
-    ]
-    FMA_MEDIUM_GENRES = [
-        'Blues',
-        'Classical',
-        'Country',
-        'Easy Listening',
-        'Electronic',
-        'Experimental',
-        'Folk',
-        'Hip-Hop',
-        'Instrumental',
-        'International',
-        'Jazz',
-        'Old-Time / Historic',
-        'Pop',
-        'Rock',
-        'Soul-RnB',
-        'Spoken',
-    ]
 
     def __init__(self,
                  data_type=None,
-                 data_dir=DATA_DIR,
+                 data_dir=globals.RESOURCES_DIR,
                  target_dir=None,
                  fma_set=FMA_SUBSETS[0],
                  split_vals=SPLIT_VALS):
@@ -109,7 +82,6 @@ class DataLoader:
 
         # Set the data directory as a Path object and resolve
         # data-containing folders dependent upon input parameters
-        data_dir = Path(data_dir)
         if target_dir is None and self.data_type == 'gtzan':
             self._target_dir = data_dir / 'gtzan' / 'genres'
         elif target_dir is None and self.data_type == 'fma':
@@ -138,9 +110,9 @@ class DataLoader:
             # Hard-coded, abbreviated genre lists
             else:
                 if self.fma_set == 'small':
-                    genres = self.FMA_SMALL_GENRES
+                    genres = globals.FMA_SMALL_GENRES
                 elif self.fma_set == 'medium':
-                    genres = self.FMA_MEDIUM_GENRES
+                    genres = globals.FMA_MEDIUM_GENRES
                 genres = pd.DataFrame({'title': genres})
 
             self._genre_dict = {v: i for i, v in enumerate(genres['title'])}
