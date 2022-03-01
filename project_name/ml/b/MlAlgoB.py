@@ -2,16 +2,21 @@
 import os
 import tensorflow as tf
 import keras
+import librosa
+import librosa.display
+import numpy as np
+import matplotlib.pyplot as plt
 from keras.layers import (Dense, BatchNormalization, Flatten,
                           Conv2D, Dropout, MaxPooling2D)
-from keras.preprocessing.image import ImageDataGenerator
+from keras.preprocessing.image import ImageDataGenerator, img_to_array, load_img
+
 
 
 class MlAlgoB:
     _accepted_data_sources = ("gtzan", "fma")
 
-    def __init__(self, data_source: str = "gtzan",
-                 cwd: str = os.getcwd()):
+    def __init__(self, data_source: str = "gtzan", classes: int = 10,
+                 model_path = None, cwd: str = os.getcwd()):
 
         # Only accepting data sources that are currently implemented
         if data_source.lower() not in self._accepted_data_sources:
@@ -25,14 +30,14 @@ class MlAlgoB:
         self.cwd = cwd
 
         # Directory of model class
-        self._model_path = os.getcwd() + '\\algo_b_model'
+        self._model_path = model_path or os.getcwd() + '\\algo_b_model.h5'
 
         # Loading existing CNN model if exists, else creating new one
         if os.path.exists(self._model_path):
-            self.model = self.load_model(self._model_path)
+            self.load_model(self._model_path)
             print("Model loaded")
         else:
-            self.model = self.create_genre_cnn_model()
+            self.model = self.create_genre_cnn_model(classes = classes)
             print("No model found")
 
     def create_genre_cnn_model(self, input_shape: tuple = (288, 432, 4),
@@ -78,16 +83,19 @@ class MlAlgoB:
         model.add(Dense(classes, activation='softmax'))
         return model
 
-    def create_data_generators_gtzan(self, batch_size: int = 8):
+    def create_data_generators(self, file_prefix = None, batch_size: int = 8):
         """ Creates data generators from mel .pngs to feed model training
 
         Keyword arguments:
         batch_size -- Number of samples to examine before modifying hyper 
         parameters
         """
+        
+        file_prefix = file_prefix or self._data_source
+        
 
         # Creating generator for training data
-        train = self.cwd + "\\mels_gtzan_train"
+        train = self.cwd + f"\\mels_{file_prefix}_train"
         train_datagen = ImageDataGenerator(rescale=1./255)
         train_generator = train_datagen.flow_from_directory(train,
                                                             target_size=(
@@ -96,7 +104,7 @@ class MlAlgoB:
                                                             class_mode='categorical',
                                                             batch_size=batch_size)
         # Creating generator for test data
-        test = self.cwd + "\\mels_gtzan_test"
+        test = self.cwd + f"\\mels_{file_prefix}_test"
         test_datagen = ImageDataGenerator(rescale=1./255)
         test_generator = test_datagen.flow_from_directory(test,
                                                           target_size=(
@@ -106,6 +114,44 @@ class MlAlgoB:
                                                           batch_size=batch_size)
 
         return train_generator, test_generator
+      
+    def convert_audio_to_numpy_array(self, audio_file_path: str):
+      """ Converts audio file to np array representation of mel spectrogram
+
+      Keyword arguments:
+      audio_file_path -- Path to audio file
+      """
+      
+      # Read audio file
+      y, sr = librosa.load(audio_file_path)
+      mels = librosa.feature.melspectrogram(y=y, sr=sr)
+      
+      # Create plot and temp save
+      plt.Figure()
+      plt.imshow(librosa.power_to_db(mels, ref=np.max))
+      plt.savefig("temp_mel.jpg")
+      
+      # Read plot in as 4D numpy array
+      img_data = img_to_array(load_img(r'temp_mel.jpg', 
+                    target_size=(288, 432), color_mode="rgba")) / 255
+      img_data = np.expand_dims(img_data, axis = 0)
+      
+      # Remove temp plot and return np_array
+      os.remove("temp_mel.jpg")
+      return img_data
+    
+    def predict_genre(self, audio_file_path: str):
+      """ Makes genre prediciton for provided audio file, returning probability
+      array
+
+      Keyword arguments:
+      audio_file_path -- Path to audio file
+      """
+      
+      # Convert audio to np array and make prediction
+      img_data = self.convert_audio_to_numpy_array(audio_file_path)
+      return self.model.predict(img_data, verbose=3)
+      
 
     def compile_model(self, loss='categorical_crossentropy',
                       optimizer=tf.keras.optimizers.Adam(
