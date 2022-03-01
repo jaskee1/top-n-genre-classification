@@ -15,7 +15,7 @@ from keras.preprocessing.image import ImageDataGenerator, img_to_array, load_img
 class MlAlgoB:
     _accepted_data_sources = ("gtzan", "fma")
 
-    def __init__(self, data_source: str = "gtzan",
+    def __init__(self, data_source: str = "gtzan", classes: int = 10,
                  cwd: str = os.getcwd()):
 
         # Only accepting data sources that are currently implemented
@@ -30,14 +30,14 @@ class MlAlgoB:
         self.cwd = cwd
 
         # Directory of model class
-        self._model_path = os.getcwd() + '\\algo_b_model'
+        self._model_path = os.getcwd() + '\\algo_b_model.h5'
 
         # Loading existing CNN model if exists, else creating new one
         if os.path.exists(self._model_path):
-            self.model = self.load_model(self._model_path)
+            self.load_model(self._model_path)
             print("Model loaded")
         else:
-            self.model = self.create_genre_cnn_model()
+            self.model = self.create_genre_cnn_model(classes = classes)
             print("No model found")
 
     def create_genre_cnn_model(self, input_shape: tuple = (288, 432, 4),
@@ -83,16 +83,19 @@ class MlAlgoB:
         model.add(Dense(classes, activation='softmax'))
         return model
 
-    def create_data_generators_gtzan(self, batch_size: int = 8):
+    def create_data_generators(self, file_prefix = None, batch_size: int = 8):
         """ Creates data generators from mel .pngs to feed model training
 
         Keyword arguments:
         batch_size -- Number of samples to examine before modifying hyper 
         parameters
         """
+        
+        file_prefix = file_prefix or self._data_source
+        
 
         # Creating generator for training data
-        train = self.cwd + "\\mels_gtzan_train"
+        train = self.cwd + f"\\mels_{file_prefix}_train"
         train_datagen = ImageDataGenerator(rescale=1./255)
         train_generator = train_datagen.flow_from_directory(train,
                                                             target_size=(
@@ -101,7 +104,7 @@ class MlAlgoB:
                                                             class_mode='categorical',
                                                             batch_size=batch_size)
         # Creating generator for test data
-        test = self.cwd + "\\mels_gtzan_test"
+        test = self.cwd + f"\\mels_{file_prefix}_test"
         test_datagen = ImageDataGenerator(rescale=1./255)
         test_generator = test_datagen.flow_from_directory(test,
                                                           target_size=(
