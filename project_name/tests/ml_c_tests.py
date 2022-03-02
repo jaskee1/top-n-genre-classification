@@ -3,19 +3,11 @@ from pathlib import Path
 import pandas as pd
 
 import project_name.data.data_loader as dl
+import project_name.globals as globals
 from project_name.ml.c.ml_algo_c import MlAlgoC
 
 # Are we using the resnet algo_c variant?
 USE_RESNET = False
-HARD_PATHS = [
-    r'C:\Users\Jason\Music\Music\Alice Phoebe Lou\Live\Berlin Blues.mp3',
-    r'C:\Users\Jason\Music\Music\Kings of Leon\[2010] Come Around Sundown '
-    r'(Deluxe Edition)\CD 1\03 - Pyro.mp3',
-    r'C:\Users\Jason\Music\Music\Purity Ring\Shrines\02 Fineshrine.mp3',
-    r'C:\Users\Jason\Music\Music\Sylvan Esso\Sylvan Esso - Sylvan Esso '
-    r'[2014] 320 CD\01 Hey Mami.mp3',
-    r'C:\Users\Jason\Music\Music\Warpaint\The Fool\01 - Set Your Arms Down.mp3'
-]
 
 
 def prediction_test():
@@ -27,7 +19,7 @@ def prediction_test():
     loader = dl.DataLoader(data_type=data_type, fma_set=fma_set)
     # Get filenames, labels, and splits
     data = loader.gather_data('.wav')
-    # Do bagging (with replacement) on just the training set here
+    # Isolate a few random files from the test split
     test = data[data['split'] == 'test']
     test = test.sample(n=10)
 
@@ -39,7 +31,6 @@ def prediction_test():
     else:
         ml_algo = MlAlgoC(load_path=MlAlgoC.MODEL_PATH)
 
-    # for filepath in test['filename']:
     for index, row in test.iterrows():
         filepath = row['filename']
         label = row['label']
@@ -51,10 +42,10 @@ def prediction_test():
         print('genre name:\t', loader.get_genre_name(label.index(1)), sep='')
 
 
-def prediction_test_custom_music(filepaths=HARD_PATHS):
+def prediction_test_custom_music(filepaths):
 
     test = pd.DataFrame({
-        'filename': HARD_PATHS,
+        'filename': filepaths,
     })
     test['filename'].map(Path)
     test['filename'].map(str)
@@ -67,7 +58,6 @@ def prediction_test_custom_music(filepaths=HARD_PATHS):
     else:
         ml_algo = MlAlgoC(load_path=MlAlgoC.MODEL_PATH)
 
-    # for filepath in test['filename']:
     for index, row in test.iterrows():
         filepath = row['filename']
         features = ml_algo.prep_data_from_file(filepath)
@@ -78,5 +68,16 @@ def prediction_test_custom_music(filepaths=HARD_PATHS):
 
 if __name__ == '__main__':
 
-    # prediction_test()
-    prediction_test_custom_music()
+    custom_paths_source = globals.RESOURCES_PATH/'text'/'test_file_paths.txt'
+
+    # Run tests on manually picked local files whose paths are written
+    # in the custom_paths_source file.
+    if custom_paths_source.exists():
+        with open(custom_paths_source, 'r') as f:
+            custom_paths = f.readlines()
+            custom_paths = list(map(lambda x: x.rstrip(), custom_paths))
+
+        prediction_test_custom_music(custom_paths)
+
+    # Run tests on a few random training files
+    prediction_test()
