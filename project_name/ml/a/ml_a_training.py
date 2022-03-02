@@ -1,5 +1,5 @@
 """
-This is a stand alone script that trains and saves the model A
+This is a standalone script that trains and saves the model A
 """
 
 import librosa
@@ -77,8 +77,7 @@ def get_test_and_validation_data():
 
 def train_model(x_train, y_train, x_valid, y_valid):
     """
-    trains the CNN
-    :return:
+    trains the CNN and saves the model file
     """
 
     # add fourth dimension
@@ -129,7 +128,8 @@ def train_model(x_train, y_train, x_valid, y_valid):
                                             mode="min", patience=10,
                                             restore_best_weights=True)
 
-    model.fit(x_train, y_train, epochs=200, steps_per_epoch=40, validation_data=(x_valid, y_valid), callbacks=[earlystopping])
+    model.fit(x_train, y_train, epochs=100, steps_per_epoch=20,
+              validation_data=(x_valid, y_valid), callbacks=[earlystopping])
 
     end = datetime.datetime.now()
     elapsed_time = end - start

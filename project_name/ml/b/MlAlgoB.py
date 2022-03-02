@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
+from pathlib import Path
+
 import tensorflow as tf
 import keras
 import librosa
@@ -30,7 +32,7 @@ class MlAlgoB:
         self.cwd = cwd
 
         # Directory of model class
-        self._model_path = model_path or os.getcwd() + '\\algo_b_model.h5'
+        self._model_path = model_path or Path(__file__).parent / 'algo_b_model.h5'
 
         # Loading existing CNN model if exists, else creating new one
         if os.path.exists(self._model_path):

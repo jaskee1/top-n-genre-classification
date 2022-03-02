@@ -1,5 +1,8 @@
+from pathlib import Path
+
 import librosa
 from tensorflow import keras
+import numpy as np
 
 
 class MlA:
@@ -11,7 +14,8 @@ class MlA:
         """
         Initializes class by loading model A
         """
-        self.model = keras.models.load_model('model_a_50.h5')
+        # TODO: update model name when model is complete
+        self.model = keras.models.load_model(Path(__file__).parent / 'model_a_50.h5')
 
     def _get_data_from_audio_file(self, filepath):
         """
@@ -21,7 +25,11 @@ class MlA:
         returns the MFCC data
         """
         y, sr = librosa.load(filepath, offset=5, duration=20)
-        return librosa.feature.mfcc(y=y, sr=sr, hop_length=1024, n_mfcc=100)
+        # TODO: update with values from working model
+        mfcc = librosa.feature.mfcc(y=y, sr=sr, hop_length=1024, n_mfcc=50)
+        mfcc = np.asarray(mfcc)
+        mfcc = mfcc.reshape(-1, len(mfcc), len(mfcc[0]), 1)
+        return mfcc
 
     def predict_a(self, filepath):
         """
