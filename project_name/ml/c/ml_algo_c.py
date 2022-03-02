@@ -11,8 +11,8 @@ import project_name.data.feature_recorder as fr
 class MlAlgoC:
     """
     """
-    MODEL_PATH = Path(__file__ + '/../algo_c_model.h5')
-    MODEL_RESNET_PATH = Path(__file__ + '/../algo_c_resnet_model.h5')
+    MODEL_PATH = Path(__file__).parent / 'algo_c_model.h5'
+    MODEL_RESNET_PATH = Path(__file__).parent / 'algo_c_resnet_model.h5'
 
     METRICS = [
         'categorical_accuracy',
