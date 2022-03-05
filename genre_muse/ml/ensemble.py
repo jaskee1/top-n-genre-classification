@@ -31,9 +31,7 @@ class Ensemble:
 
         predictions_a = weight_a * np.asarray(self.cnn_model_a.predict_a(audio_filepath))
         predictions_b = weight_b * np.asarray(self.cnn_model_b.predict_genre(audio_filepath))
-
-        features = self.cnn_model_c.prep_data_from_file(audio_filepath)
-        predictions_c = weight_c * np.asarray(self.cnn_model_c.predict(features))
+        predictions_c = weight_c * np.asarray(self.cnn_model_c.predict_from_file(audio_filepath))
 
         combined_predictions = (predictions_a + predictions_b + predictions_c) / 3
 

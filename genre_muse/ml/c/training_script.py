@@ -51,14 +51,13 @@ if __name__ == '__main__':
         training = pd.concat([training, validation])
         validation = test
 
-    # print(metadata.shape)
-    # print(metadata)
-
     # Do bagging (with replacement) on just the training set here
     training = training.sample(frac=1, replace=True, random_state=42)
-    print(training)
+    # print(metadata.shape)
+    # print(metadata)
+    # print(training)
 
-    # Debug --- REMOVE LATER
+    # Debug
     print('Splits:')
     print(training.shape)
     print(validation.shape)
@@ -84,7 +83,7 @@ if __name__ == '__main__':
         for elem in training.take(1):
             input_shape = tf.shape(elem[0])[1:].numpy()
             label_shape = tf.shape(elem[1])[1:].numpy()
-            # Debug --- REMOVE LATER
+            # Debug
             print('input shape:')
             print(tf.shape(elem[0]).numpy())
             print('label shape:')
@@ -94,6 +93,8 @@ if __name__ == '__main__':
 
     # Compile the model and fit the training data
     ml_algo.compile_model()
+    # Print a summary for debugging purposes
+    ml_algo.model.summary()
     # Using early stopping to automatically get best fit and to stop training
     # once it's found.
     earlyStop = tf.keras.callbacks.EarlyStopping(

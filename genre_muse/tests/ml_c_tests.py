@@ -34,8 +34,7 @@ def prediction_test():
     for index, row in test.iterrows():
         filepath = row['filename']
         label = row['label']
-        features = ml_algo.prep_data_from_file(filepath)
-        prediction = ml_algo.predict(features)
+        prediction = ml_algo.predict_from_file(filepath=filepath)
         print('prediction values:\n', prediction, sep='')
         print('file:\t', filepath)
         print('genre num:\t', label.index(1), sep='')
@@ -60,8 +59,7 @@ def prediction_test_custom_music(filepaths):
 
     for index, row in test.iterrows():
         filepath = row['filename']
-        features = ml_algo.prep_data_from_file(filepath)
-        prediction = ml_algo.predict(features)
+        prediction = ml_algo.predict_from_file(filepath=filepath)
         print('prediction values:\n', prediction, sep='')
         print('file:\t', filepath)
 

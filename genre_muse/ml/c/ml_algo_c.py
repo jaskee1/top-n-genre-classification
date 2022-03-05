@@ -102,8 +102,6 @@ class MlAlgoC:
             keras.layers.Dense(output_shape, activation='softmax')
         ])
 
-        print(model.summary())
-
         return model
 
     # Code source (adapted from):
@@ -144,8 +142,6 @@ class MlAlgoC:
         model.add(keras.layers.Dropout(0.5))
         model.add(keras.layers.Dense(output_shape, activation='softmax'))
 
-        print(model.summary())
-
         return model
 
     def compile_model(self, loss='categorical_crossentropy',
@@ -167,7 +163,14 @@ class MlAlgoC:
         return features
 
     def predict(self, inputs):
+        """
+        """
         return self.model(inputs, training=False)
+
+    def predict_from_file(self, filepath):
+        """
+        """
+        return self.model(self.prep_data_from_file(filepath), training=False)
 
     def save_model(self, path=MODEL_PATH):
         """
