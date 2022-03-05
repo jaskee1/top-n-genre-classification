@@ -1,9 +1,9 @@
 import sys
 import time
 
-import project_name.data.data_loader as dl
-import project_name.data.feature_extractor as fe
-import project_name.data.feature_recorder as fr
+import genre_muse.data.data_loader as dl
+import genre_muse.data.feature_extractor as fe
+import genre_muse.data.feature_recorder as fr
 
 DEBUG = False
 

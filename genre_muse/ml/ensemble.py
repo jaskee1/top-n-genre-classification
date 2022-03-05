@@ -1,6 +1,6 @@
-from project_name.ml.b.MlAlgoB import MlAlgoB
-from project_name.ml.a.ml_a import MlA
-from project_name.ml.c.ml_algo_c import MlAlgoC
+from genre_muse.ml.b.MlAlgoB import MlAlgoB
+from genre_muse.ml.a.ml_a import MlA
+from genre_muse.ml.c.ml_algo_c import MlAlgoC
 import numpy as np
 
 class Ensemble:

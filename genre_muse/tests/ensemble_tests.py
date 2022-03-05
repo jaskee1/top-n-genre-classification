@@ -2,7 +2,7 @@ import os
 import unittest
 
 
-from project_name.ml.ensemble import Ensemble
+from genre_muse.ml.ensemble import Ensemble
 
 
 class EnsembleTests(unittest.TestCase):

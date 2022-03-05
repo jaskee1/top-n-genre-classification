@@ -2,9 +2,9 @@ from pathlib import Path
 
 import pandas as pd
 
-import project_name.data.data_loader as dl
-import project_name.globals as globals
-from project_name.ml.c.ml_algo_c import MlAlgoC
+import genre_muse.data.data_loader as dl
+import genre_muse.globals as globals
+from genre_muse.ml.c.ml_algo_c import MlAlgoC
 
 # Are we using the resnet algo_c variant?
 USE_RESNET = False

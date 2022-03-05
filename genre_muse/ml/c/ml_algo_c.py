@@ -4,8 +4,8 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 
-import project_name.data.feature_extractor as fe
-import project_name.data.feature_recorder as fr
+import genre_muse.data.feature_extractor as fe
+import genre_muse.data.feature_recorder as fr
 
 
 class MlAlgoC:

@@ -4,8 +4,8 @@ import time
 import pandas as pd
 import tensorflow as tf
 
-import project_name.data.data_loader as dl
-from project_name.ml.c.ml_algo_c import MlAlgoC
+import genre_muse.data.data_loader as dl
+from genre_muse.ml.c.ml_algo_c import MlAlgoC
 
 # Are we loading or training from a fresh state?
 LOAD_ALGO = False

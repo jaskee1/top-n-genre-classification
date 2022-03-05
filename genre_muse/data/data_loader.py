@@ -3,7 +3,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-import project_name.globals as globals
+import genre_muse.globals as globals
 
 
 class DataLoader:
