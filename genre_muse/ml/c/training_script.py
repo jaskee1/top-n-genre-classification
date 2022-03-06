@@ -99,7 +99,7 @@ if __name__ == '__main__':
     # once it's found.
     earlyStop = tf.keras.callbacks.EarlyStopping(
         monitor='val_categorical_accuracy',
-        patience=10,
+        patience=7,
         restore_best_weights=True
     )
     ml_algo.model.fit(training, epochs=50, validation_data=validation,
