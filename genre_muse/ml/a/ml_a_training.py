@@ -5,10 +5,10 @@ This is a standalone script that trains and saves the model A
 import librosa
 import os
 import datetime
+import tensorflow as tf
 from tensorflow import keras
 import numpy as np
 import random
-from keras import callbacks
 
 TRAINING_FILE_PATH = 'fma_small_split_wav/fma_train/'
 VALIDATION_FILE_PATH = 'fma_small_split_wav/fma_validate/'
@@ -39,7 +39,7 @@ def get_test_and_validation_data():
             file_path = TRAINING_FILE_PATH + folder + '/' + filename
             y, sr = librosa.load(file_path, offset=5, duration=20)
 
-            mfcc = librosa.feature.mfcc(y=y, sr=sr, hop_length=1024, n_mfcc=100)
+            mfcc = librosa.feature.mfcc(y=y, sr=sr, hop_length=1024, n_mfcc=20)
 
             x_train.append(mfcc)
             y_train.append(genres.index(folder))
@@ -55,7 +55,7 @@ def get_test_and_validation_data():
                 file_path = VALIDATION_FILE_PATH + folder + '/' + filename
                 y, sr = librosa.load(file_path, offset=5, duration=20)
 
-                mfcc = librosa.feature.mfcc(y=y, sr=sr, hop_length=1024, n_mfcc=100)
+                mfcc = librosa.feature.mfcc(y=y, sr=sr, hop_length=1024, n_mfcc=20)
 
                 x_valid.append(mfcc)
                 y_valid.append(genres.index(folder))
@@ -91,12 +91,15 @@ def train_model(x_train, y_train, x_valid, y_valid):
     model = keras.models.Sequential([
         keras.layers.BatchNormalization(input_shape=(len(x_train[0]), len(x_train[0][0]), 1)),
         keras.layers.Conv2D(64, 7, activation="relu", padding="same"),  # CNN layers
+        #keras.layers.Dropout(0.5),
         keras.layers.MaxPooling2D(2),
         keras.layers.Conv2D(128, 3, activation="relu", padding="same"),
         keras.layers.Conv2D(128, 3, activation="relu", padding="same"),
+        keras.layers.Dropout(0.5),
         keras.layers.MaxPooling2D(2),
         keras.layers.Conv2D(256, 3, activation="relu", padding="same"),
         keras.layers.Conv2D(256, 3, activation="relu", padding="same"),
+        #keras.layers.Dropout(0.5),
         keras.layers.MaxPooling2D(2),
         keras.layers.Flatten(),  # ANN layers
         keras.layers.Dense(128, activation="relu"),
@@ -115,7 +118,11 @@ def train_model(x_train, y_train, x_valid, y_valid):
 
     start = datetime.datetime.now()
 
-    model.compile(loss="sparse_categorical_crossentropy", optimizer="sgd", metrics=["accuracy"],)
+    optimizer = tf.keras.optimizers.SGD(
+        learning_rate=0.01, momentum=0.0, nesterov=False, name='SGD'
+    )
+
+    model.compile(loss="sparse_categorical_crossentropy", optimizer=optimizer, metrics=["accuracy"],)
 
     end = datetime.datetime.now()
     elapsed_time = end - start
@@ -124,19 +131,15 @@ def train_model(x_train, y_train, x_valid, y_valid):
 
     start = datetime.datetime.now()
 
-    earlystopping = callbacks.EarlyStopping(monitor="val_loss",
-                                            mode="min", patience=10,
-                                            restore_best_weights=True)
-
-    model.fit(x_train, y_train, epochs=100, steps_per_epoch=20,
-              validation_data=(x_valid, y_valid), callbacks=[earlystopping])
+    model.fit(x_train, y_train, epochs=75, steps_per_epoch=100,
+              validation_data=(x_valid, y_valid))
 
     end = datetime.datetime.now()
     elapsed_time = end - start
 
     print("model fit complete " + str(elapsed_time))
 
-    model.save("model_a_50.h5")
+    model.save("model_a.h5")
 
 
 if __name__ == '__main__':
