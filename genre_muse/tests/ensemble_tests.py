@@ -14,7 +14,7 @@ class EnsembleTests(unittest.TestCase):
         """
         Tests that the ensemble can run without errors
         """
-        filepath = os.getcwd() + '/test_audiofiles/10805.wav';
+        filepath = os.getcwd() + '/test_audiofiles/10805.wav'
         test_ensemble = Ensemble()
         prediction = test_ensemble.predict_genres(filepath)
         print(prediction)
